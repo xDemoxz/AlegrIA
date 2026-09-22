@@ -9,6 +9,11 @@ const PATTERNS = { calado: CaladoPattern, teja: TejaPattern, baldosa: BaldosaPat
  * (no HTML5 drag nativo): así el mismo código responde a mouse, touch y a
  * los PointerEvents sintéticos que despacha gestureBridge, sin ramas
  * especiales por dispositivo.
+ *
+ * v2: sin contorno negro — la tarjeta se separa por radio + sombra
+ * difuminada. Hover levanta y gira ligeramente (sticker art real, no un
+ * efecto de tarjeta genérica); al tomarla (active/grabbing) baja y la
+ * sombra se hunde, como el resto de los controles del sistema.
  */
 export default function PosterSticker({ sticker, onDragStart }) {
   const Pattern = sticker.pattern ? PATTERNS[sticker.pattern] : null;
@@ -17,7 +22,7 @@ export default function PosterSticker({ sticker, onDragStart }) {
     <button
       type="button"
       onPointerDown={(e) => onDragStart(sticker.id, e.clientX, e.clientY)}
-      className="relative w-full aspect-[3/4] rounded-badge border-3 border-ink shadow-pop-black overflow-hidden cursor-grab active:cursor-grabbing touch-none"
+      className="relative w-full aspect-[3/4] rounded-sticker shadow-soft overflow-hidden cursor-grab active:cursor-grabbing touch-none transition-all duration-200 ease-pop hover:-translate-y-1 hover:rotate-1 hover:shadow-soft-lg active:translate-y-0 active:rotate-0 active:shadow-pressed"
       style={{ background: sticker.bg }}
       title={sticker.label}
     >

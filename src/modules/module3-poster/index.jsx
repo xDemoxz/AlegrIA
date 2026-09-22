@@ -8,10 +8,11 @@ import { exportPosterToPng } from './exportPoster';
 import { STICKERS } from './data/stickers';
 
 /**
- * MÓDULO 3 — Generador de Pósters (José Romero)
+ * MÓDULO 3 — Generador de Pósters / Murales (José Romero)
  * ------------------------------------------------------------------
  * Estampitas: src/modules/module3-poster/data/stickers.js (placeholders de
- * color — reemplazar `bg`/`pattern` por `image` cuando lleguen los assets).
+ * color — reemplazar `bg`/`pattern` por `image` cuando lleguen las
+ * ilustraciones reales).
  *
  * Arrastre: NO usa HTML5 drag nativo — usa Pointer Events a propósito, para
  * que el mismo código funcione con mouse, touch Y con los gestos de tu
@@ -19,14 +20,27 @@ import { STICKERS } from './data/stickers';
  * archivo para conectar su sistema: el bridge ya traduce sus eventos a
  * pointerdown/pointermove/pointerup reales sobre estos mismos elementos.
  *
+ * Modelo de "fondo, no pegatina": al soltar una estampita sobre el cartel
+ * NO queda un ícono fijo en esa posición — la estampita reemplaza por
+ * completo el fondo del cartel (color + patrón, ver PosterPreview). Solo
+ * importa cuál fue la última que soltaste; por eso solo se necesita
+ * rastrear el punto donde sueltas (para saber si cayó dentro del canvas),
+ * no una posición que guardar.
+ *
  * Flujo: al guardar el cartel se exporta a PNG (html2canvas) y se avanza al
- * Módulo 4 automáticamente. `npm install html2canvas` si no está instalado.
+ * Módulo 4 automáticamente.
+ *
+ * Próxima fase (pendiente, no implementada aquí): concepto de "murales" —
+ * cada estampita representaría un lugar real de Barrio Abajo en vez de un
+ * tema genérico. Necesita el fondo/mapa del barrio y las fotos/ilustraciones
+ * de cada lugar antes de poder implementarse; el modelo de estado ya quedó
+ * preparado para ese cambio (una sola estampita "activa" define el fondo).
  */
 export default function Module3Poster() {
   const prev = useAppStore((s) => s.prev);
   const next = useAppStore((s) => s.next);
 
-  const { title, setTitle, text, setText, canvasStickers, addSticker, removeSticker } =
+  const { title, setTitle, text, setText, activeStickerId, setBackground, reset } =
     usePosterState();
 
   const canvasRef = useRef(null);
@@ -52,9 +66,9 @@ export default function Module3Poster() {
           const withinX = e.clientX >= rect.left && e.clientX <= rect.right;
           const withinY = e.clientY >= rect.top && e.clientY <= rect.bottom;
           if (withinX && withinY) {
-            const xPct = ((e.clientX - rect.left) / rect.width) * 100;
-            const yPct = ((e.clientY - rect.top) / rect.height) * 100;
-            addSticker(initialState.stickerId, xPct, yPct);
+            // Soltar dentro del canvas reemplaza el fondo — no se guarda
+            // posición, la estampita no queda como ícono en el cartel.
+            setBackground(initialState.stickerId);
           }
         }
         setDragState(null);
@@ -65,7 +79,7 @@ export default function Module3Poster() {
       window.addEventListener('pointermove', handleMove);
       window.addEventListener('pointerup', handleUp);
     },
-    [addSticker]
+    [setBackground]
   );
 
   // Dispara los listeners justo cuando arranca un drag nuevo.
@@ -93,6 +107,11 @@ export default function Module3Poster() {
     }
   }, [title, next]);
 
+  const handleReset = useCallback(() => {
+    reset();
+    setToast('Cartel reiniciado');
+  }, [reset]);
+
   return (
     <section className="grid pt-8" style={{ gridTemplateColumns: 'minmax(320px, 460px) 1fr', minHeight: '80vh' }}>
       <PosterForm
@@ -102,13 +121,13 @@ export default function Module3Poster() {
         onTextChange={setText}
         onStickerDragStart={onStickerDragStart}
         onBack={prev}
+        onReset={handleReset}
       />
       <PosterPreview
         ref={canvasRef}
         title={title}
         text={text}
-        canvasStickers={canvasStickers}
-        onRemoveSticker={removeSticker}
+        activeStickerId={activeStickerId}
         onSave={handleSave}
         saving={saving}
       />
@@ -116,13 +135,14 @@ export default function Module3Poster() {
       {/* Ghost de la estampita siguiendo el cursor (mouse/touch/gesto) mientras se arrastra */}
       {dragState && (
         <div
-          className="fixed z-[998] w-16 h-20 rounded-badge border-3 border-white shadow-pop-black pointer-events-none opacity-90"
+          className="fixed z-[998] w-16 h-20 rounded-badge pointer-events-none opacity-90"
           style={{
             left: dragState.x,
             top: dragState.y,
-            transform: 'translate(-50%, -50%)',
+            transform: 'translate(-50%, -50%) rotate(-2deg)',
             background:
               STICKERS.find((s) => s.id === dragState.stickerId)?.bg ?? '#1DB3E7',
+            boxShadow: '0 0 0 3px rgba(255,255,255,0.6), 0 14px 32px -8px rgb(18 18 18 / 0.35)',
           }}
         />
       )}

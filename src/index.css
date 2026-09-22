@@ -30,3 +30,13 @@
     transform: translateX(-50%);
   }
 }
+
+/* Cross-fade del fondo del cartel (Módulo 3) al cambiar la estampita activa */
+@keyframes bg-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
