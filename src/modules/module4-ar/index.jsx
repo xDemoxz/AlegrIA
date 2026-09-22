@@ -17,7 +17,7 @@ export default function Module4AR() {
         Módulo de Realidad Aumentada (Zappar) — setup pendiente. Placeholder mientras se define
         el disparador AR final.
       </PopAlert>
-      <div className="border-3 border-ink rounded-sticker bg-cream p-10 text-center">
+      <div className="shadow-soft rounded-sticker bg-cream p-10 text-center">
         <p className="text-base font-medium">Aquí se monta el canvas/disparador de Zappar.</p>
       </div>
     </section>
