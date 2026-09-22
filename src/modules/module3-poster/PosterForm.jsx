@@ -2,12 +2,13 @@ import { STICKERS } from './data/stickers';
 import PosterSticker from './PosterSticker';
 import PopButton from '../../components/controls/PopButton';
 
-/** Badge circular "?" con tooltip nativo — misma idea del mockup. */
+/** Badge circular "?" con tooltip nativo — misma idea del mockup.
+ * v2: sin contorno negro, sombra difuminada + pequeño rebote en hover. */
 function HelpBadge({ hint }) {
   return (
     <span
       title={hint}
-      className="shrink-0 w-6 h-6 rounded-pill bg-orange text-white border-2 border-ink flex items-center justify-center text-xs font-bold cursor-help"
+      className="shrink-0 w-6 h-6 rounded-pill bg-orange text-white shadow-soft flex items-center justify-center text-xs font-bold cursor-help transition-transform duration-150 ease-pop hover:scale-110"
     >
       ?
     </span>
@@ -19,6 +20,9 @@ function HelpBadge({ hint }) {
  * y texto del cartel. La lógica de arrastre vive en el módulo padre
  * (index.jsx) vía onStickerDragStart, para poder soltar sobre el canvas del
  * panel derecho.
+ *
+ * v2: inputs sin borde de color — se delimitan con sombra interior (como
+ * SearchInput) y anillo teal al enfocar.
  */
 export default function PosterForm({
   title,
@@ -27,6 +31,7 @@ export default function PosterForm({
   onTextChange,
   onStickerDragStart,
   onBack,
+  onReset,
 }) {
   return (
     <div className="bg-cream h-full overflow-y-auto p-8 flex flex-col gap-7">
@@ -46,7 +51,7 @@ export default function PosterForm({
             onChange={(e) => onTitleChange(e.target.value)}
             placeholder="Tu nombre o el de alguien especial"
             maxLength={40}
-            className="flex-1 font-body text-base px-4 py-2.5 bg-cream border-2 border-red rounded-md outline-none focus:shadow-[3px_3px_0_0_#1DB3E7] text-ink"
+            className="flex-1 font-body text-base px-4 py-2.5 bg-white rounded-xl outline-none text-ink shadow-[inset_0_2px_4px_rgba(18,18,18,0.12)] focus:shadow-[inset_0_2px_4px_rgba(18,18,18,0.12),0_0_0_3px_#3CBAB3] transition-shadow duration-150"
           />
           <HelpBadge hint="Aparecerá como título grande en tu cartel." />
         </div>
@@ -54,8 +59,8 @@ export default function PosterForm({
 
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center gap-2.5">
-          <span className="font-display text-lg tracking-wide">2. Arrastra las estampitas que llevará tu cartel</span>
-          <HelpBadge hint="Toma una estampita y suéltala sobre el cartel a la derecha. Con gestos: pellizca para tomar, mueve la mano y suelta para colocar." />
+          <span className="font-display text-lg tracking-wide">2. Arrastra una estampita para definir el fondo</span>
+          <HelpBadge hint="Suéltala sobre el cartel a la derecha y se convierte en su fondo — puedes cambiarla las veces que quieras, la última que sueltes manda. Con gestos: pellizca para tomar, mueve la mano y suelta." />
         </div>
         <div className="grid grid-cols-4 gap-3">
           {STICKERS.map((s) => (
@@ -78,15 +83,20 @@ export default function PosterForm({
             placeholder="Una frase corta para tu cartel"
             maxLength={80}
             rows={2}
-            className="flex-1 font-body text-base px-4 py-2.5 bg-cream border-2 border-red rounded-md outline-none resize-none focus:shadow-[3px_3px_0_0_#1DB3E7] text-ink"
+            className="flex-1 font-body text-base px-4 py-2.5 bg-white rounded-xl outline-none resize-none text-ink shadow-[inset_0_2px_4px_rgba(18,18,18,0.12)] focus:shadow-[inset_0_2px_4px_rgba(18,18,18,0.12),0_0_0_3px_#3CBAB3] transition-shadow duration-150"
           />
           <HelpBadge hint="Máximo 80 caracteres. Se mostrará debajo del título." />
         </div>
       </div>
 
-      <PopButton variant="primary" className="!text-lg self-start mt-1" onClick={onBack}>
-        ‹ ATRÁS
-      </PopButton>
+      <div className="flex items-center gap-3 mt-1">
+        <PopButton variant="primary" className="!text-lg self-start" onClick={onBack}>
+          ‹ ATRÁS
+        </PopButton>
+        <PopButton variant="ghost" className="!text-base self-start" onClick={onReset}>
+          ↺ Empezar de nuevo
+        </PopButton>
+      </div>
     </div>
   );
 }

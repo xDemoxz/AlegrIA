@@ -6,6 +6,9 @@ import { enableGestureBridge } from '../../lib/gestureBridge';
  * Móntalo UNA vez cerca de la raíz (ver App.jsx) cuando
  * useAppStore().gestureControlEnabled sea true. No hace falta montarlo
  * manualmente dentro de cada módulo.
+ *
+ * v2: sin contorno negro — sombra difuminada. Verde (teal) como color de
+ * reposo, ya que es el acento interactivo por defecto del sistema.
  */
 export default function GestureCursor({ enabled }) {
   const [pos, setPos] = useState(null);
@@ -32,11 +35,8 @@ export default function GestureCursor({ enabled }) {
       }}
     >
       <div
-        className="w-8 h-8 rounded-pill border-3 border-ink"
-        style={{
-          background: pos.active ? '#E02828' : '#1DB3E7',
-          boxShadow: '3px 3px 0 0 #121212',
-        }}
+        className="w-8 h-8 rounded-pill shadow-soft"
+        style={{ background: pos.active ? '#E02828' : '#1E8C86' }}
       />
     </div>
   );
