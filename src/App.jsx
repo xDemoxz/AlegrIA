@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
 import { useAppStore, SECTION } from './store/useAppStore';
 import HeaderBanner from './components/layout/HeaderBanner';
 import MarqueeStrip from './components/layout/MarqueeStrip';
 import FooterBajero from './components/layout/FooterBajero';
 import BaldosaPattern from './components/motifs/BaldosaPattern';
+import GestureCursor from './components/controls/GestureCursor';
 
 import Module1Timeline from './modules/module1-timeline';
 import Module2Future from './modules/module2-future';
@@ -22,14 +22,17 @@ const MODULES = {
  * sistema de diseño una sola vez y conmuta el módulo activo según
  * useAppStore. Cada compañero trabaja dentro de su carpeta en
  * src/modules/** sin tocar este archivo.
+ *
+ * GestureCursor se monta aquí UNA sola vez: cuando el sistema de gestos de
+ * tu compañero esté conectado (ver src/lib/gestureBridge.js), cualquier
+ * módulo que use Pointer Events (como el drag de estampitas del Módulo 3)
+ * ya responde a gestos sin cambios adicionales.
  */
 export default function App() {
   const section = useAppStore((s) => s.section);
+  const gestureControlEnabled = useAppStore((s) => s.gestureControlEnabled);
+  const toggleGestureControl = useAppStore((s) => s.toggleGestureControl);
   const ActiveModule = MODULES[section];
-
-  // Reservado: aquí se conectará Lenis (smooth scroll) cuando el Módulo 1
-  // esté listo para consumirlo — no inicializar antes de tiempo.
-  useEffect(() => {}, []);
 
   return (
     <div className="relative min-h-screen bg-yellow pb-24 overflow-hidden">
@@ -43,6 +46,20 @@ export default function App() {
       </main>
 
       <FooterBajero />
+
+      <GestureCursor enabled={gestureControlEnabled} />
+
+      {/* Toggle temporal de depuración — control por gestos. Muévelo al
+          lugar definitivo del flujo cuando el sistema de tu compañero esté
+          integrado; por ahora sirve para probar el bridge sin su hardware. */}
+      <button
+        type="button"
+        onClick={toggleGestureControl}
+        className="fixed bottom-4 right-4 z-[999] font-display text-sm tracking-wide px-4 pt-2 pb-1 rounded-pill border-3 border-ink shadow-pop-black"
+        style={{ background: gestureControlEnabled ? '#E02828' : '#FDF6E3', color: gestureControlEnabled ? '#fff' : '#121212' }}
+      >
+        {gestureControlEnabled ? 'GESTOS: ON' : 'GESTOS: OFF'}
+      </button>
     </div>
   );
 }
