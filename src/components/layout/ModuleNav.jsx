@@ -1,17 +1,18 @@
 import { SECTION } from '../../store/useAppStore';
 
 const ITEMS = [
-  { section: SECTION.MOD1_TIMELINE, label: '1 · LÍNEA' },
-  { section: SECTION.MOD2_FUTURE, label: '2 · FUTURO' },
-  { section: SECTION.MOD3_POSTER, label: '3 · PÓSTER' },
-  { section: SECTION.MOD4_AR, label: '4 · AR' },
+  { section: SECTION.MOD1_TIMELINE, label: '1 · INICIO' },
+  { section: SECTION.MOD3_POSTER, label: '2 · PÓSTER' },
+  { section: SECTION.MOD4_AR, label: '3 · AR' },
 ];
 
 /**
- * ModuleNav — navegación directa entre los 4 módulos, para desarrollo y
- * pruebas (mientras el flujo real de scroll/CTA entre módulos no está
- * terminado). Quitar o esconder detrás de un flag cuando el recorrido
- * completo esté implementado.
+ * ModuleNav — navegación directa entre las 3 secciones del switcher
+ * (Inicio, Póster, AR), para desarrollo y pruebas (mientras el flujo real
+ * de scroll/CTA no está terminado). El Módulo 2 "Futuro" ya no tiene botón
+ * propio aquí: su teaser vive apilado dentro de "1 · INICIO" (ver
+ * src/modules/home) y su experiencia completa corre en la ruta standalone
+ * /futuro, fuera de este switcher.
  *
  * v2: se retira el contorno negro grueso del contenedor (línea sutil al
  * 10% en su lugar) y el estado activo pasa a teal — rojo queda reservado
