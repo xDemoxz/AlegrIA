@@ -133,19 +133,27 @@ export default function Module3Poster() {
       />
 
       {/* Ghost de la estampita siguiendo el cursor (mouse/touch/gesto) mientras se arrastra */}
-      {dragState && (
-        <div
-          className="fixed z-[998] w-16 h-20 rounded-badge pointer-events-none opacity-90"
-          style={{
-            left: dragState.x,
-            top: dragState.y,
-            transform: 'translate(-50%, -50%) rotate(-2deg)',
-            background:
-              STICKERS.find((s) => s.id === dragState.stickerId)?.bg ?? '#1DB3E7',
-            boxShadow: '0 0 0 3px rgba(255,255,255,0.6), 0 14px 32px -8px rgb(18 18 18 / 0.35)',
-          }}
-        />
-      )}
+      {dragState &&
+        (() => {
+          const s = STICKERS.find((x) => x.id === dragState.stickerId);
+          return (
+            <div
+              className="fixed z-[998] w-20 h-20 rounded-sticker pointer-events-none bg-white shadow-soft-lg overflow-hidden flex items-center justify-center"
+              style={{
+                left: dragState.x,
+                top: dragState.y,
+                transform: 'translate(-50%, -50%) rotate(-2deg)',
+                boxShadow: '0 0 0 3px rgba(255,255,255,0.6), 0 14px 32px -8px rgb(18 18 18 / 0.35)',
+              }}
+            >
+              {s?.image ? (
+                <img src={s.image} alt={s.label} className="w-full h-full object-contain p-1.5" />
+              ) : (
+                <div className="w-full h-full" style={{ background: s?.bg ?? '#1DB3E7' }} />
+              )}
+            </div>
+          );
+        })()}
 
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
     </section>

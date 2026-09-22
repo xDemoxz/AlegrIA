@@ -5,6 +5,8 @@ import ModuleNav from '../components/layout/ModuleNav';
 import FooterBajero from '../components/layout/FooterBajero';
 import BaldosaPattern from '../components/motifs/BaldosaPattern';
 import GestureCursor from '../components/controls/GestureCursor';
+import StoryCarousel from '../components/media/StoryCarousel';
+import HomeMuralBanner from '../components/media/HomeMuralBanner';
 
 import Home from '../modules/home';
 import Module3Poster from '../modules/module3-poster';
@@ -55,6 +57,8 @@ export default function HomeApp() {
 
       <HeaderBanner />
       <MarqueeStrip />
+      <StoryCarousel />
+      <HomeMuralBanner />
       <ModuleNav active={section} onSelect={goTo} />
 
       <main className="relative z-[2] flex-1">

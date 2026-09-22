@@ -26,9 +26,8 @@ const PosterPreview = forwardRef(function PosterPreview(
   const activeSticker = activeStickerId ? STICKERS.find((s) => s.id === activeStickerId) : null;
   const bgHex = activeSticker?.bg ?? '#1DB3E7';
   const ActivePattern = activeSticker?.pattern ? PATTERNS[activeSticker.pattern] : null;
-  // Fuerza el remount (y por tanto el fade-in) cada vez que cambia la
-  // estampita que manda sobre el fondo.
   const bgKey = activeSticker ? activeSticker.id : 'default';
+  const hasImage = !!activeSticker?.image;
 
   return (
     <div className="h-full flex items-center justify-center bg-red-dark p-8">
@@ -37,33 +36,46 @@ const PosterPreview = forwardRef(function PosterPreview(
         className="relative w-full max-w-[420px] aspect-[9/16] rounded-sticker shadow-soft-lg overflow-hidden select-none"
         style={{ background: 'linear-gradient(180deg, #121212 0%, #1a1a1a 55%, #121212 100%)' }}
       >
-        {/* Tinte de color de la estampita activa */}
-        <div
-          key={`tint-${bgKey}`}
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at 50% 78%, ${bgHex}59, transparent 45%)`,
-            animation: 'bg-fade-in 0.5s ease-out',
-          }}
-        />
-
-        {/* Textura: el patrón vernáculo de la estampita activa si trae uno,
-            o la "ciudad" de puntos genérica por defecto */}
-        {ActivePattern ? (
-          <ActivePattern key={`pattern-${bgKey}`} className="absolute inset-0 pointer-events-none" opacity={0.22} />
-        ) : (
+        {hasImage ? (
           <div
-            key={`pattern-${bgKey}`}
-            className="absolute inset-0 opacity-40 pointer-events-none"
+            key={`image-${bgKey}`}
+            className="absolute inset-0 pointer-events-none bg-ink"
             style={{
-              backgroundImage: 'radial-gradient(#F2B807 1px, transparent 1px)',
-              backgroundSize: '14px 22px',
-              maskImage: 'linear-gradient(90deg, black 0 18%, transparent 18% 100%)',
-              WebkitMaskImage: 'linear-gradient(90deg, black 0 18%, transparent 18% 100%)',
+              backgroundImage: `url(${activeSticker.image})`,
+              backgroundSize: activeSticker.id === 'st-mariposas' ? 'cover' : 'contain',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
               animation: 'bg-fade-in 0.5s ease-out',
             }}
           />
+        ) : (
+          <>
+            <div
+              key={`tint-${bgKey}`}
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `radial-gradient(circle at 50% 78%, ${bgHex}59, transparent 45%)`,
+                animation: 'bg-fade-in 0.5s ease-out',
+              }}
+            />
+            {ActivePattern ? (
+              <ActivePattern key={`pattern-${bgKey}`} className="absolute inset-0 pointer-events-none" opacity={0.22} />
+            ) : (
+              <div
+                key={`pattern-${bgKey}`}
+                className="absolute inset-0 opacity-40 pointer-events-none"
+                style={{
+                  backgroundImage: 'radial-gradient(#F2B807 1px, transparent 1px)',
+                  backgroundSize: '14px 22px',
+                  maskImage: 'linear-gradient(90deg, black 0 18%, transparent 18% 100%)',
+                  WebkitMaskImage: 'linear-gradient(90deg, black 0 18%, transparent 18% 100%)',
+                  animation: 'bg-fade-in 0.5s ease-out',
+                }}
+              />
+            )}
+          </>
         )}
+        {hasImage && <div className="absolute inset-0 bg-ink/55 pointer-events-none" />}
 
         {/* Halo de luna */}
         <div

@@ -1,17 +1,63 @@
 /**
- * Estampitas del generador de pósters (Módulo 3).
- * Placeholders de color + tema mientras llegan las ilustraciones reales
- * (ver backlog Fase 0 — investigación). Para reemplazar una por su imagen
- * final: agrega `image: '/ruta/o/url.png'` al item; PosterSticker la usa
- * automáticamente en vez del bloque de color si está presente.
+ * Estampitas del generador de pósters (Módulo 3) — ahora con arte real.
+ * Fuente: public/assets/iconos (19 HQ normalizados desde src/assets/ICONOS TRADICON BAJERA 2026).
+ * Cada motivo trae su imagen PNG monocroma naranja sobre alfa (original fijo, sin tinte).
  */
 export const STICKERS = [
-  { id: 'st-01', label: 'Cena romántica', bg: '#F26522', pattern: null },
-  { id: 'st-02', label: 'Paseo al atardecer', bg: '#FFDC43', pattern: null },
-  { id: 'st-03', label: 'Noche de carnaval', bg: '#E02828', pattern: 'calado' },
-  { id: 'st-04', label: 'Encuentro nocturno', bg: '#121212', pattern: null },
-  { id: 'st-05', label: 'Calle del muelle', bg: '#A81212', pattern: 'teja' },
-  { id: 'st-06', label: 'Mirando al río', bg: '#0A749A', pattern: null },
-  { id: 'st-07', label: 'Bajo la luna', bg: '#1DB3E7', pattern: 'baldosa' },
-  { id: 'st-08', label: 'Playa y mar', bg: '#FDF6E3', pattern: null },
+  {
+    id: 'st-alegria',
+    label: 'Alegría',
+    bg: '#F2B807',
+    pattern: null,
+    image: '/assets/iconos/01-alegria.png',
+    variants: ['/assets/iconos/01-alegria-2.png', '/assets/iconos/01-alegria-3.png'],
+  },
+  {
+    id: 'st-flores',
+    label: 'Trinitarias',
+    bg: '#F2B807',
+    pattern: null,
+    image: '/assets/iconos/02-flores.png',
+    variants: ['/assets/iconos/02-flores-2.png', '/assets/iconos/02-flores-3.png'],
+  },
+  {
+    id: 'st-turbo',
+    label: 'Turbo',
+    bg: '#121212',
+    pattern: null,
+    image: '/assets/iconos/03-turbo.png',
+    variants: ['/assets/iconos/03-turbo-2.png', '/assets/iconos/03-turbo-3.png'],
+  },
+  {
+    id: 'st-ponchera',
+    label: 'Ponchera',
+    bg: '#A81212',
+    pattern: null,
+    image: '/assets/iconos/04-ponchera.png',
+    variants: ['/assets/iconos/04-ponchera-2.png', '/assets/iconos/04-ponchera-3.png'],
+  },
+  {
+    id: 'st-raspao',
+    label: 'Raspao',
+    bg: '#1DB3E7',
+    pattern: null,
+    image: '/assets/iconos/05-raspao.png',
+    variants: ['/assets/iconos/05-raspao-2.png', '/assets/iconos/05-raspao-3.png'],
+  },
+  {
+    id: 'st-calados',
+    label: 'Calados',
+    bg: '#FDF6E3',
+    pattern: 'calado',
+    image: '/assets/iconos/06-calados.png',
+    variants: ['/assets/iconos/06-calados-2.png', '/assets/iconos/06-calados-3.png'],
+  },
+  {
+    id: 'st-mariposas',
+    label: 'Mariposas',
+    bg: '#FFDC43',
+    pattern: null,
+    image: '/assets/iconos/07-mariposas.png',
+    variants: [],
+  },
 ];
