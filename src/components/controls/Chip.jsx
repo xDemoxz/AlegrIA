@@ -10,7 +10,7 @@ const TONES = {
 export default function Chip({ children, tone = 'red', className = '' }) {
   return (
     <span
-      className={`text-[13px] font-extrabold tracking-[0.1em] uppercase px-3.5 py-1.5 border-2 border-ink rounded-pill ${TONES[tone]} ${className}`}
+      className={`inline-block text-[13px] font-extrabold tracking-[0.1em] uppercase leading-none px-4 py-2 border-2 border-ink rounded-pill ${TONES[tone]} ${className}`}
     >
       {children}
     </span>

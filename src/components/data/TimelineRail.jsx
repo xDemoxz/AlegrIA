@@ -10,8 +10,8 @@ export default function TimelineRail({ hitos, activeYear, onSelect, accent = '#E
   const active = hitos.find((h) => h.year === activeYear) ?? hitos[0];
 
   return (
-    <div className="bg-cream border-3 border-ink rounded-sticker shadow-pop-black p-6.5">
-      <div className="flex flex-wrap gap-4.5">
+    <div className="bg-cream border-3 border-ink rounded-sticker shadow-pop-black p-7">
+      <div className="flex flex-wrap gap-5">
         {hitos.map((h) => (
           <TimelineBadge
             key={h.id}
@@ -23,7 +23,7 @@ export default function TimelineRail({ hitos, activeYear, onSelect, accent = '#E
         ))}
       </div>
       {active && (
-        <div className="mt-5.5 bg-ink text-cream rounded-xl px-4.5 py-4 text-[17px] font-medium leading-[1.5]">
+        <div className="mt-6 bg-ink text-cream rounded-xl px-5 py-4 text-[17px] font-medium leading-[1.5]">
           <span className="font-display text-2xl text-yellow tracking-wide">{active.year} · </span>
           {active.text}
         </div>

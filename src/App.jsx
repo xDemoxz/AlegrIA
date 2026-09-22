@@ -1,6 +1,7 @@
 import { useAppStore, SECTION } from './store/useAppStore';
 import HeaderBanner from './components/layout/HeaderBanner';
 import MarqueeStrip from './components/layout/MarqueeStrip';
+import ModuleNav from './components/layout/ModuleNav';
 import FooterBajero from './components/layout/FooterBajero';
 import BaldosaPattern from './components/motifs/BaldosaPattern';
 import GestureCursor from './components/controls/GestureCursor';
@@ -18,10 +19,14 @@ const MODULES = {
 };
 
 /**
- * App — chasis global de AlegrIA. Renderiza header/marquee/footer del
+ * App — chasis global de AlegrIA. Renderiza header/marquee/nav/footer del
  * sistema de diseño una sola vez y conmuta el módulo activo según
  * useAppStore. Cada compañero trabaja dentro de su carpeta en
  * src/modules/** sin tocar este archivo.
+ *
+ * Layout: wrapper en flex-col + min-h-screen y <main> con flex-1 para que
+ * el footer quede pegado al fondo real de la ventana cuando el contenido
+ * del módulo activo es corto (sticky footer clásico).
  *
  * GestureCursor se monta aquí UNA sola vez: cuando el sistema de gestos de
  * tu compañero esté conectado (ver src/lib/gestureBridge.js), cualquier
@@ -30,18 +35,20 @@ const MODULES = {
  */
 export default function App() {
   const section = useAppStore((s) => s.section);
+  const goTo = useAppStore((s) => s.goTo);
   const gestureControlEnabled = useAppStore((s) => s.gestureControlEnabled);
   const toggleGestureControl = useAppStore((s) => s.toggleGestureControl);
   const ActiveModule = MODULES[section];
 
   return (
-    <div className="relative min-h-screen bg-yellow pb-24 overflow-hidden">
+    <div className="relative flex flex-col min-h-screen bg-yellow overflow-x-hidden">
       <BaldosaPattern className="absolute inset-0 pointer-events-none" opacity={0.13} />
 
       <HeaderBanner />
       <MarqueeStrip />
+      <ModuleNav active={section} onSelect={goTo} />
 
-      <main className="relative z-[2]">
+      <main className="relative z-[2] flex-1">
         <ActiveModule />
       </main>
 
@@ -55,8 +62,8 @@ export default function App() {
       <button
         type="button"
         onClick={toggleGestureControl}
-        className="fixed bottom-4 right-4 z-[999] font-display text-sm tracking-wide px-4 pt-2 pb-1 rounded-pill border-3 border-ink shadow-pop-black"
-        style={{ background: gestureControlEnabled ? '#E02828' : '#FDF6E3', color: gestureControlEnabled ? '#fff' : '#121212' }}
+        className="fixed bottom-4 right-4 z-[999] font-display text-sm tracking-wide leading-none px-5 pt-2.5 pb-2 rounded-pill shadow-soft transition-all duration-200 ease-pop hover:-translate-y-0.5 hover:shadow-soft-lg active:translate-y-0 active:shadow-pressed"
+        style={{ background: gestureControlEnabled ? '#E02828' : '#FDF6E3', color: gestureControlEnabled ? '#fff' : '#0F5F5A' }}
       >
         {gestureControlEnabled ? 'GESTOS: ON' : 'GESTOS: OFF'}
       </button>

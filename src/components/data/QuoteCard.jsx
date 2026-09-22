@@ -24,7 +24,7 @@ export default function QuoteCard({ year, category = 'Memoria Oral', quote, tilt
         <Chip tone="cream">{category}</Chip>
       </div>
       <blockquote className="m-0 text-lg font-medium italic leading-[1.5]">“{quote.text}”</blockquote>
-      <div className="flex items-center gap-3 mt-4.5">
+      <div className="flex items-center gap-3 mt-5">
         <div className="w-[46px] h-[46px] rounded-pill border-3 border-ink bg-blue flex items-center justify-center font-display text-white text-xl">
           {initials}
         </div>

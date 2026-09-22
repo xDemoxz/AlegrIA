@@ -20,7 +20,7 @@ import LoadingTejas from '../../components/feedback/LoadingTejas';
  */
 export default function Module2Future() {
   return (
-    <section className="max-w-[1240px] mx-auto px-6 pt-14">
+    <section className="max-w-[1240px] mx-auto px-6 pt-12">
       <div className="border-3 border-ink rounded-sticker bg-cream p-10 text-center">
         <LoadingTejas label="Escena 3D pendiente — Gustavo" />
         <p className="text-base font-medium mt-2">
