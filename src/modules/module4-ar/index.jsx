@@ -12,7 +12,7 @@ import PopAlert from '../../components/feedback/PopAlert';
  */
 export default function Module4AR() {
   return (
-    <section className="max-w-[1240px] mx-auto px-6 pt-14 flex flex-col gap-5">
+    <section className="max-w-[1240px] mx-auto px-6 pt-12 flex flex-col gap-5">
       <PopAlert tone="info">
         Módulo de Realidad Aumentada (Zappar) — setup pendiente. Placeholder mientras se define
         el disparador AR final.

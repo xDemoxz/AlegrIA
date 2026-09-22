@@ -1,25 +1,27 @@
 /**
- * exportPoster — renderiza el nodo del cartel a PNG y dispara la descarga.
- * Usa html2canvas (agrégalo con `npm install html2canvas` si aún no está).
+ * exportPoster — exporta el nodo del canvas del póster a PNG usando
+ * html2canvas (import dinámico para no inflar el bundle inicial).
+ * Dispara la descarga en el navegador y devuelve el data URL por si el
+ * caller quiere hacer algo más con la imagen (preview, subir, etc.).
  */
-export async function exportPosterToPng(
-  node,
-  filename = "mi-cartel-alegria.png"
-) {
-  const { default: html2canvas } = await import("html2canvas")
+export async function exportPosterToPng(node, filename = 'cartel-alegria.png') {
+  if (!node) throw new Error('exportPosterToPng: no se recibió el nodo del canvas');
+
+  const { default: html2canvas } = await import('html2canvas');
   const canvas = await html2canvas(node, {
     backgroundColor: null,
-    scale: 2, // nitidez para impresión/proyección
-    useCORS: true
-  })
+    scale: 2,
+    useCORS: true,
+  });
 
-  const dataUrl = canvas.toDataURL("image/png")
-  const link = document.createElement("a")
-  link.href = dataUrl
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
+  const dataUrl = canvas.toDataURL('image/png');
 
-  return dataUrl
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  return dataUrl;
 }

@@ -94,7 +94,7 @@ export default function Module3Poster() {
   }, [title, next]);
 
   return (
-    <section className="grid" style={{ gridTemplateColumns: 'minmax(320px, 460px) 1fr', minHeight: '80vh' }}>
+    <section className="grid pt-8" style={{ gridTemplateColumns: 'minmax(320px, 460px) 1fr', minHeight: '80vh' }}>
       <PosterForm
         title={title}
         onTitleChange={setTitle}
