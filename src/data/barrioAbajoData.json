@@ -1,0 +1,50 @@
+{
+  "_nota": "Mock temporal mientras se cierra el .md de investigación (backlog Fase 0). Estructura sujeta a cambios — mantener las claves h.year, h.title, h.text para no romper TimelineRail.",
+  "hitos": [
+    {
+      "id": "H01",
+      "year": 1857,
+      "category": "Cronología",
+      "title": "El muelle de las velas",
+      "text": "Los champanes llegaban al amanecer y el barrio entero bajaba a la orilla. Así nació el nombre que todavía nos define.",
+      "era": "pasado"
+    },
+    {
+      "id": "H02",
+      "year": 1920,
+      "category": "Arquitectura",
+      "title": "Bahareque y teja colonial",
+      "text": "Las casas de bahareque dan paso a fachadas con teja colonial y calados.",
+      "era": "pasado"
+    },
+    {
+      "id": "H03",
+      "year": 1968,
+      "category": "Festival",
+      "title": "La comparsa fundadora",
+      "text": "Nace la comparsa que abriría los carnavales durante tres décadas.",
+      "era": "pasado"
+    },
+    {
+      "id": "H04",
+      "year": 1994,
+      "category": "Memoria Oral",
+      "title": "Tradición Bajera",
+      "text": "La primera edición del festival \"Tradición Bajera\" reúne a 40 cocineras del barrio.",
+      "era": "presente",
+      "quote": {
+        "text": "Aquí el que no canta, cocina; y el que no cocina, presta la silla para que los demás se sienten.",
+        "author": "Doña Carmen Ruiz",
+        "role": "Vecina de la calle del Mango"
+      }
+    },
+    {
+      "id": "H05",
+      "year": 2026,
+      "category": "Río",
+      "title": "AlegrIA",
+      "text": "El archivo del barrio se vuelve una experiencia interactiva proyectada en pared.",
+      "era": "presente"
+    }
+  ]
+}

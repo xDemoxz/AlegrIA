@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-yellow text-ink font-body;
+    margin: 0;
+  }
+
+  a {
+    @apply text-blue-dark underline underline-offset-[3px];
+  }
+  a:hover {
+    @apply text-red;
+  }
+
+  ::selection {
+    @apply bg-red text-white;
+  }
+}
+
+@layer utilities {
+  /* Textura punteada de fondo usada bajo el header/hero (ver HeaderBanner) */
+  .bg-dot-grid {
+    background-image: radial-gradient(#121212 1.5px, transparent 1.5px);
+    background-size: 18px 18px;
+  }
+}
+
+@keyframes bajero-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
