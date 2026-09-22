@@ -24,6 +24,11 @@ const MODULES = {
  * useAppStore. Cada compañero trabaja dentro de su carpeta en
  * src/modules/** sin tocar este archivo.
  *
+ * SIN animaciones de scroll — navbar completo (Header + Marquee +
+ * ModuleNav) siempre visible y estático, como al principio. Se probó una
+ * versión flotante (TopNav.jsx + hooks de scroll + ScrollHint.jsx) y se
+ * descartó por decisión de diseño; esos archivos quedaron sin usar.
+ *
  * Layout: wrapper en flex-col + min-h-screen y <main> con flex-1 para que
  * el footer quede pegado al fondo real de la ventana cuando el contenido
  * del módulo activo es corto (sticky footer clásico).
