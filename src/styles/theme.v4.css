@@ -3,6 +3,7 @@
  *   @import "./styles/theme.v4.css";
  * Sustituye a tailwind.config.js + postcss.config.js (eliminados en la migración).
  */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;600&display=swap');
 @import "tailwindcss";
 
 @theme {
