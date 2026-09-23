@@ -2,9 +2,9 @@ import { useState } from 'react';
 
 /**
  * StoryCarousel — banda editorial debajo del hero global.
- * Usa la MISMA animación que MarqueeStrip (bajero-marquee en src/index.css:25)
- * : cinta continua infinita sin botones ni pausa por slide, solo marquee lineal.
- * Duplica el track [...SLIDES, ...SLIDES] para loop perfecto translateX(-50%).
+ * Cinta continua infinita (bajero-marquee en src/index.css:25) con
+ * track duplicado [...SLIDES, ...SLIDES] para loop translateX(-50%).
+ * Compacto: cards 300-340px para no robar >1 viewport al timeline.
  */
 const SLIDES = [
   { src: '/assets/carrusel/c1.png', alt: 'C1 — ¿Alguna vez te has preguntado por el Barrio Abajo?' },
@@ -26,23 +26,22 @@ export default function StoryCarousel() {
       onTouchStart={() => setPaused(true)}
       onTouchEnd={() => setPaused(false)}
     >
-      <div className="max-w-[1240px] mx-auto px-6 pt-8 pb-3">
-        <h2 className="font-display text-3xl md:text-5xl tracking-wide text-red-dark leading-none">HISTORIAS DEL BARRIO</h2>
+      <div className="max-w-[1240px] mx-auto px-6 pt-6 md:pt-7 pb-2">
+        <h2 className="font-display text-2xl md:text-4xl tracking-wide text-red-dark leading-none">HISTORIAS DEL BARRIO</h2>
       </div>
 
-      {/* Pista marquee — idéntica a MarqueeStrip.jsx:8 pero con cards de imagen */}
-      <div className="overflow-hidden pb-6">
+      <div className="overflow-hidden pb-4">
         <div
-          className="flex w-max gap-4 will-change-transform"
+          className="flex w-max gap-3 will-change-transform"
           style={{
-            animation: 'bajero-marquee 45s linear infinite',
+            animation: 'bajero-marquee 38s linear infinite',
             animationPlayState: paused ? 'paused' : 'running',
           }}
         >
           {track.map((s, i) => (
             <div
               key={`${s.src}-${i}`}
-              className="shrink-0 w-[78vw] sm:w-[380px] md:w-[400px] aspect-[4/5] rounded-sticker overflow-hidden shadow-soft bg-white hover:shadow-soft-lg hover:-translate-y-1 transition-all duration-300"
+              className="shrink-0 w-[68vw] sm:w-[300px] md:w-[340px] aspect-[4/5] rounded-sticker overflow-hidden shadow-soft bg-white hover:shadow-soft-lg hover:-translate-y-1 transition-all duration-300"
             >
               <img
                 src={s.src}

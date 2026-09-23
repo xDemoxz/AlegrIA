@@ -17,19 +17,28 @@ export function usePosterState() {
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [activeStickerId, setActiveStickerId] = useState(null);
+  const [activeBackgroundId, setActiveBackgroundId] = useState(null);
 
   const setBackground = useCallback((stickerId) => {
     setActiveStickerId(stickerId);
+    setActiveBackgroundId(null);
+  }, []);
+
+  const setBackgroundFromBg = useCallback((bgId) => {
+    setActiveBackgroundId(bgId);
+    setActiveStickerId(null);
   }, []);
 
   const clearBackground = useCallback(() => {
     setActiveStickerId(null);
+    setActiveBackgroundId(null);
   }, []);
 
   const reset = useCallback(() => {
     setTitle('');
     setText('');
     setActiveStickerId(null);
+    setActiveBackgroundId(null);
   }, []);
 
   return {
@@ -38,7 +47,9 @@ export function usePosterState() {
     text,
     setText,
     activeStickerId,
+    activeBackgroundId,
     setBackground,
+    setBackgroundFromBg,
     clearBackground,
     reset,
   };
