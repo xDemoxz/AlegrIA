@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import { STICKERS } from './data/stickers';
+import { BACKGROUNDS } from './data/backgrounds';
 import PopButton from '../../components/controls/PopButton';
 import CaladoPattern from '../../components/motifs/CaladoPattern';
 import TejaPattern from '../../components/motifs/TejaPattern';
@@ -12,22 +13,25 @@ const PATTERNS = { calado: CaladoPattern, teja: TejaPattern, baldosa: BaldosaPat
  * usa para 1) que index.jsx sepa si soltaste dentro del canvas y 2)
  * exportar a PNG con html2canvas.
  *
- * v2 + modelo "fondo, no pegatina": la estampita que sueltas NO queda
- * pegada como ícono — reemplaza el fondo completo del cartel (tinte de
- * color + su patrón vernáculo si trae uno). Sin ninguna estampita soltada
- * se ve el tinte azul original. El cambio hace fade-in (bg-fade-in en
- * index.css) para que se note en vez de saltar en seco. Marco sin
- * contorno negro — se delimita con sombra difuminada.
+ * v2 + modelo "fondo, no pegatina": la estampita o fondo que sueltas NO
+ * queda pegada como ícono — reemplaza el fondo completo del cartel (tinte
+ * de color + patrón vernáculo o imagen PNG). Fondo SVG (BACKGROUNDS) tiene
+ * prioridad si existe; si no, usa estampita. Sin ninguno se ve tinte azul.
+ * Fade-in (bg-fade-in) para transición.
  */
 const PosterPreview = forwardRef(function PosterPreview(
-  { title, text, activeStickerId, onSave, saving },
+  { title, text, activeStickerId, activeBackgroundId, onSave, saving },
   canvasRef
 ) {
-  const activeSticker = activeStickerId ? STICKERS.find((s) => s.id === activeStickerId) : null;
-  const bgHex = activeSticker?.bg ?? '#1DB3E7';
-  const ActivePattern = activeSticker?.pattern ? PATTERNS[activeSticker.pattern] : null;
-  const bgKey = activeSticker ? activeSticker.id : 'default';
+  const activeBg = activeBackgroundId ? BACKGROUNDS.find((b) => b.id === activeBackgroundId) : null;
+  const activeSticker = !activeBg && activeStickerId ? STICKERS.find((s) => s.id === activeStickerId) : null;
+  const bgHex = activeBg?.bg ?? activeSticker?.bg ?? '#1DB3E7';
+  const bgPatternKey = activeBg?.pattern ?? activeSticker?.pattern ?? null;
+  const ActivePattern = bgPatternKey && bgPatternKey !== 'festival' ? PATTERNS[bgPatternKey] : null;
+  const isFestival = bgPatternKey === 'festival';
+  const bgKey = activeBg ? activeBg.id : activeSticker ? activeSticker.id : 'default';
   const hasImage = !!activeSticker?.image;
+  const hasBg = !!activeBg;
 
   return (
     <div className="h-full flex items-center justify-center bg-red-dark p-8">
@@ -36,18 +40,42 @@ const PosterPreview = forwardRef(function PosterPreview(
         className="relative w-full max-w-[420px] aspect-[9/16] rounded-sticker shadow-soft-lg overflow-hidden select-none"
         style={{ background: 'linear-gradient(180deg, #121212 0%, #1a1a1a 55%, #121212 100%)' }}
       >
-        {hasImage ? (
-          <div
-            key={`image-${bgKey}`}
-            className="absolute inset-0 pointer-events-none bg-ink"
-            style={{
-              backgroundImage: `url(${activeSticker.image})`,
-              backgroundSize: activeSticker.id === 'st-mariposas' ? 'cover' : 'contain',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              animation: 'bg-fade-in 0.5s ease-out',
-            }}
-          />
+        {hasBg ? (
+          <>
+            {isFestival ? (
+              <div key={`bg-${bgKey}`} className="absolute inset-0 bg-festival pointer-events-none" style={{ animation: 'bg-fade-in 0.5s ease-out' }} />
+            ) : (
+              <div key={`bg-${bgKey}`} className="absolute inset-0 pointer-events-none" style={{ background: bgHex, animation: 'bg-fade-in 0.5s ease-out' }} />
+            )}
+            {ActivePattern ? (
+              <ActivePattern key={`pattern-${bgKey}`} className="absolute inset-0 pointer-events-none" opacity={isFestival ? 0 : 0.22} />
+            ) : !isFestival ? (
+              <div
+                key={`pattern-${bgKey}`}
+                className="absolute inset-0 opacity-30 pointer-events-none"
+                style={{
+                  backgroundImage: 'radial-gradient(#F2B807 1.5px, transparent 1.5px)',
+                  backgroundSize: '16px 24px',
+                  animation: 'bg-fade-in 0.5s ease-out',
+                }}
+              />
+            ) : null}
+          </>
+        ) : hasImage ? (
+          <>
+            <div
+              key={`image-${bgKey}`}
+              className="absolute inset-0 pointer-events-none bg-ink"
+              style={{
+                backgroundImage: `url(${activeSticker.image})`,
+                backgroundSize: activeSticker.id === 'st-mariposas' ? 'cover' : 'contain',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                animation: 'bg-fade-in 0.5s ease-out',
+              }}
+            />
+            <div className="absolute inset-0 bg-ink/55 pointer-events-none" />
+          </>
         ) : (
           <>
             <div
@@ -75,7 +103,6 @@ const PosterPreview = forwardRef(function PosterPreview(
             )}
           </>
         )}
-        {hasImage && <div className="absolute inset-0 bg-ink/55 pointer-events-none" />}
 
         {/* Halo de luna */}
         <div
@@ -100,9 +127,9 @@ const PosterPreview = forwardRef(function PosterPreview(
           style={{ background: `${bgHex}47`, animation: 'bg-fade-in 0.5s ease-out' }}
         />
 
-        {!activeSticker && (
+        {!activeSticker && !activeBg && (
           <p className="absolute inset-x-6 bottom-28 text-center text-[13px] font-semibold text-cream/70">
-            Arrastra una estampita aquí para definir el fondo
+            Arrastra una estampita o un fondo aquí
           </p>
         )}
 

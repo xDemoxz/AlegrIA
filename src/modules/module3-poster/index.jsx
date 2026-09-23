@@ -6,6 +6,7 @@ import PosterPreview from './PosterPreview';
 import Toast from '../../components/feedback/Toast';
 import { exportPosterToPng } from './exportPoster';
 import { STICKERS } from './data/stickers';
+import { BACKGROUNDS } from './data/backgrounds';
 
 /**
  * MÓDULO 3 — Generador de Pósters / Murales (José Romero)
@@ -40,20 +41,28 @@ export default function Module3Poster() {
   const prev = useAppStore((s) => s.prev);
   const next = useAppStore((s) => s.next);
 
-  const { title, setTitle, text, setText, activeStickerId, setBackground, reset } =
-    usePosterState();
+  const {
+    title,
+    setTitle,
+    text,
+    setText,
+    activeStickerId,
+    activeBackgroundId,
+    setBackground,
+    setBackgroundFromBg,
+    reset,
+  } = usePosterState();
 
   const canvasRef = useRef(null);
-  const [dragState, setDragState] = useState(null); // { stickerId, x, y } | null
+  const [dragState, setDragState] = useState(null); // { type:'sticker'|'bg', id, x, y } | null
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const handleDragStart = useCallback((stickerId, x, y) => {
-    setDragState({ stickerId, x, y });
+  const handleDragStart = useCallback((type, id, x, y) => {
+    setDragState({ type, id, x, y });
   }, []);
 
-  // Un solo listener global de pointer mientras hay un drag activo — se
-  // registra/limpia con dragState para no dejar listeners huérfanos.
+  // Un solo listener global de pointer mientras hay un drag activo
   const attachDragListeners = useCallback(
     (initialState) => {
       function handleMove(e) {
@@ -66,9 +75,8 @@ export default function Module3Poster() {
           const withinX = e.clientX >= rect.left && e.clientX <= rect.right;
           const withinY = e.clientY >= rect.top && e.clientY <= rect.bottom;
           if (withinX && withinY) {
-            // Soltar dentro del canvas reemplaza el fondo — no se guarda
-            // posición, la estampita no queda como ícono en el cartel.
-            setBackground(initialState.stickerId);
+            if (initialState.type === 'bg') setBackgroundFromBg(initialState.id);
+            else setBackground(initialState.id);
           }
         }
         setDragState(null);
@@ -79,14 +87,22 @@ export default function Module3Poster() {
       window.addEventListener('pointermove', handleMove);
       window.addEventListener('pointerup', handleUp);
     },
-    [setBackground]
+    [setBackground, setBackgroundFromBg]
   );
 
-  // Dispara los listeners justo cuando arranca un drag nuevo.
   const onStickerDragStart = useCallback(
     (stickerId, x, y) => {
-      const initial = { stickerId, x, y };
-      handleDragStart(stickerId, x, y);
+      const initial = { type: 'sticker', id: stickerId, x, y };
+      handleDragStart('sticker', stickerId, x, y);
+      attachDragListeners(initial);
+    },
+    [handleDragStart, attachDragListeners]
+  );
+
+  const onBgDragStart = useCallback(
+    (bgId, x, y) => {
+      const initial = { type: 'bg', id: bgId, x, y };
+      handleDragStart('bg', bgId, x, y);
       attachDragListeners(initial);
     },
     [handleDragStart, attachDragListeners]
@@ -120,6 +136,7 @@ export default function Module3Poster() {
         text={text}
         onTextChange={setText}
         onStickerDragStart={onStickerDragStart}
+        onBgDragStart={onBgDragStart}
         onBack={prev}
         onReset={handleReset}
       />
@@ -128,14 +145,34 @@ export default function Module3Poster() {
         title={title}
         text={text}
         activeStickerId={activeStickerId}
+        activeBackgroundId={activeBackgroundId}
         onSave={handleSave}
         saving={saving}
       />
 
-      {/* Ghost de la estampita siguiendo el cursor (mouse/touch/gesto) mientras se arrastra */}
+      {/* Ghost del elemento arrastrado (estampita o fondo SVG) */}
       {dragState &&
         (() => {
-          const s = STICKERS.find((x) => x.id === dragState.stickerId);
+          if (dragState.type === 'bg') {
+            const bg = BACKGROUNDS.find((x) => x.id === dragState.id);
+            if (!bg) return null;
+            const isFestival = bg.pattern === 'festival';
+            return (
+              <div
+                className={`fixed z-[998] w-20 h-20 rounded-sticker pointer-events-none shadow-soft-lg overflow-hidden flex items-center justify-center border-2 border-white/40 ${isFestival ? 'bg-festival' : ''}`}
+                style={{
+                  left: dragState.x,
+                  top: dragState.y,
+                  transform: 'translate(-50%, -50%) rotate(-2deg)',
+                  background: isFestival ? undefined : bg.bg,
+                  boxShadow: '0 0 0 3px rgba(255,255,255,0.6), 0 14px 32px -8px rgb(18 18 18 / 0.35)',
+                }}
+              >
+                <span className="text-[11px] font-bold text-white px-1 text-center drop-shadow">{bg.label}</span>
+              </div>
+            );
+          }
+          const s = STICKERS.find((x) => x.id === dragState.id);
           return (
             <div
               className="fixed z-[998] w-20 h-20 rounded-sticker pointer-events-none bg-white shadow-soft-lg overflow-hidden flex items-center justify-center"
