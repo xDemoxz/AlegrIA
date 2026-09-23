@@ -26,11 +26,25 @@ export async function exportPosterToPng(node, filename = 'cartel-alegria.png') {
     scale: 2,
     useCORS: true,
     logging: true,
+    foreignObjectRendering: true, // Evita error "unsupported color function oklab"
     onclone: (clonedDoc) => {
       // Asegurar que las imágenes clonas tengan crossOrigin
       clonedDoc.querySelectorAll('img').forEach((img) => {
         img.crossOrigin = 'anonymous';
       });
+      // Forzar colores computados a formato compatible (hex/rgb) para html2canvas
+      const walker = document.createTreeWalker(clonedDoc.body, NodeFilter.SHOW_ELEMENT);
+      while (walker.nextNode()) {
+        const el = walker.currentNode;
+        const style = clonedDoc.defaultView.getComputedStyle(el);
+        ['backgroundColor', 'color', 'borderColor', 'boxShadow'].forEach((prop) => {
+          const val = style.getPropertyValue(prop);
+          if (val && (val.includes('oklab') || val.includes('oklch'))) {
+            // html2canvas no soporta oklab/oklch; forzar a rgb
+            el.style.setProperty(prop, val.replace(/okla?b?\([^)]+\)/g, 'transparent'));
+          }
+        });
+      }
     },
   });
 
