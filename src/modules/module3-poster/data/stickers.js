@@ -1,7 +1,7 @@
 /**
- * Estampitas del generador de pósters (Módulo 3) — ahora con arte real.
+ * Estampitas del generador de pósters (Módulo 3) — arte real con variantes de color.
  * Fuente: public/assets/iconos (19 HQ normalizados desde src/assets/ICONOS TRADICON BAJERA 2026).
- * Cada motivo trae su imagen PNG monocroma naranja sobre alfa (original fijo, sin tinte).
+ * Cada motivo trae su imagen PNG monocroma sobre alfa. Variantes permiten cambiar el color.
  */
 export const STICKERS = [
   {
@@ -10,7 +10,11 @@ export const STICKERS = [
     bg: '#F2B807',
     pattern: null,
     image: '/assets/iconos/01-alegria.png',
-    variants: ['/assets/iconos/01-alegria-2.png', '/assets/iconos/01-alegria-3.png'],
+    variants: [
+      { name: 'Amarillo', image: '/assets/iconos/01-alegria.png' },
+      { name: 'Verde', image: '/assets/iconos/01-alegria-2.png' },
+      { name: 'Azul', image: '/assets/iconos/01-alegria-3.png' },
+    ],
   },
   {
     id: 'st-flores',
@@ -18,7 +22,11 @@ export const STICKERS = [
     bg: '#F2B807',
     pattern: null,
     image: '/assets/iconos/02-flores.png',
-    variants: ['/assets/iconos/02-flores-2.png', '/assets/iconos/02-flores-3.png'],
+    variants: [
+      { name: 'Original', image: '/assets/iconos/02-flores.png' },
+      { name: 'Rojo', image: '/assets/iconos/02-flores-2.png' },
+      { name: 'Fucsia', image: '/assets/iconos/02-flores-3.png' },
+    ],
   },
   {
     id: 'st-turbo',
@@ -26,7 +34,11 @@ export const STICKERS = [
     bg: '#121212',
     pattern: null,
     image: '/assets/iconos/03-turbo.png',
-    variants: ['/assets/iconos/03-turbo-2.png', '/assets/iconos/03-turbo-3.png'],
+    variants: [
+      { name: 'Azul', image: '/assets/iconos/03-turbo.png' },
+      { name: 'Violeta', image: '/assets/iconos/03-turbo-2.png' },
+      { name: 'Negro', image: '/assets/iconos/03-turbo-3.png' },
+    ],
   },
   {
     id: 'st-ponchera',
@@ -34,7 +46,11 @@ export const STICKERS = [
     bg: '#A81212',
     pattern: null,
     image: '/assets/iconos/04-ponchera.png',
-    variants: ['/assets/iconos/04-ponchera-2.png', '/assets/iconos/04-ponchera-3.png'],
+    variants: [
+      { name: 'Naranja', image: '/assets/iconos/04-ponchera.png' },
+      { name: 'Rojo', image: '/assets/iconos/04-ponchera-2.png' },
+      { name: 'Carmesi', image: '/assets/iconos/04-ponchera-3.png' },
+    ],
   },
   {
     id: 'st-raspao',
@@ -42,7 +58,11 @@ export const STICKERS = [
     bg: '#1DB3E7',
     pattern: null,
     image: '/assets/iconos/05-raspao.png',
-    variants: ['/assets/iconos/05-raspao-2.png', '/assets/iconos/05-raspao-3.png'],
+    variants: [
+      { name: 'Celeste', image: '/assets/iconos/05-raspao.png' },
+      { name: 'Amarillo', image: '/assets/iconos/05-raspao-2.png' },
+      { name: 'Dorado', image: '/assets/iconos/05-raspao-3.png' },
+    ],
   },
   {
     id: 'st-calados',
@@ -50,7 +70,11 @@ export const STICKERS = [
     bg: '#FDF6E3',
     pattern: 'calado',
     image: '/assets/iconos/06-calados.png',
-    variants: ['/assets/iconos/06-calados-2.png', '/assets/iconos/06-calados-3.png'],
+    variants: [
+      { name: 'Crema', image: '/assets/iconos/06-calados.png' },
+      { name: 'Gris claro', image: '/assets/iconos/06-calados-2.png' },
+      { name: 'Gris oscuro', image: '/assets/iconos/06-calados-3.png' },
+    ],
   },
   {
     id: 'st-mariposas',
