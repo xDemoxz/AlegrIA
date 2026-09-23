@@ -12,7 +12,7 @@ const LOGOS = [
 
 export default function FooterBajero() {
   return (
-    <footer className="relative z-[2] mt-8 bg-[linear-gradient(135deg,#A81212_0%,#E02828_60%,#F26522_100%)] text-white px-6 pt-8 pb-10">
+    <footer className="relative z-[2] bg-[linear-gradient(135deg,#A81212_0%,#E02828_60%,#F26522_100%)] text-white px-6 pt-8 pb-10">
       <div className="max-w-[1240px] mx-auto flex flex-col items-center gap-6">
         <div className="font-display text-3xl tracking-[0.1em] text-yellow-light text-center">
           BARRIO ABAJO DEL RÍO · ALEGRÍA

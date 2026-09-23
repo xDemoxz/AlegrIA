@@ -35,6 +35,8 @@ export default function PosterForm({
   onBgDragStart,
   onBack,
   onReset,
+  activeStickerId,
+  stickerVariants,
 }) {
   return (
     <div className="bg-cream h-full overflow-y-auto p-8 flex flex-col gap-7">
@@ -62,24 +64,29 @@ export default function PosterForm({
 
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center gap-2.5">
-          <span className="font-display text-lg tracking-wide">2. Arrastra una estampita para definir el fondo</span>
-          <HelpBadge hint="Suéltala sobre el cartel a la derecha y se convierte en su fondo — puedes cambiarla las veces que quieras, la última que sueltes manda. Con gestos: pellizca para tomar, mueve la mano y suelta." />
+          <span className="font-display text-lg tracking-wide">2. Elige un fondo (SVG)</span>
+          <HelpBadge hint="Quedará detrás, semi-transparente — no le quita protagonismo a la estampita. Arrastra uno al cartel; el siguiente fondo reemplaza solo la capa base." />
         </div>
         <div className="grid grid-cols-4 gap-3">
-          {STICKERS.map((s) => (
-            <PosterSticker key={s.id} sticker={s} onDragStart={onStickerDragStart} />
+          {BACKGROUNDS.map((bg) => (
+            <PosterBackground key={bg.id} bg={bg} onDragStart={onBgDragStart} />
           ))}
         </div>
       </div>
 
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center gap-2.5">
-          <span className="font-display text-lg tracking-wide">3. Elige un fondo (SVG)</span>
-          <HelpBadge hint="Fondos 100% SVG/CSS, sin imágenes externas. Arrastra uno al cartel igual que las estampitas — reemplaza el fondo actual." />
+          <span className="font-display text-lg tracking-wide">3. Arrastra una estampita (protagonista)</span>
+          <HelpBadge hint="Va sobre el fondo, al centro y a todo color. La última estampita manda, pero no borra el fondo." />
         </div>
         <div className="grid grid-cols-4 gap-3">
-          {BACKGROUNDS.map((bg) => (
-            <PosterBackground key={bg.id} bg={bg} onDragStart={onBgDragStart} />
+          {STICKERS.map((s) => (
+            <PosterSticker
+              key={s.id}
+              sticker={s}
+              onDragStart={onStickerDragStart}
+              selectedVariant={activeStickerId === s.id ? stickerVariants[s.id] : undefined}
+            />
           ))}
         </div>
       </div>

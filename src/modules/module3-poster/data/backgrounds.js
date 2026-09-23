@@ -1,56 +1,15 @@
 /**
  * Fondos del generador de pósters (Módulo 3) — SVG/CSS, sin assets.
- * No usan /public/assets: son combinaciones de tokens v2 + patrones
- * vernáculos (bg-baldosa, bg-teja, bg-calado, bg-festival) definidos en
- * src/styles/theme.v4.css. Drag & drop igual que estampitas.
+ * Colores neutros (sin amarillo) + patrones sutiles (no calado/diamante).
+ * Cada fondo puede tener pattern: 'dots', 'lines', 'grid' o null.
  */
 export const BACKGROUNDS = [
-  {
-    id: 'bg-baldosa',
-    label: 'Baldosa',
-    bg: '#F2B807',
-    pattern: 'baldosa',
-  },
-  {
-    id: 'bg-teja',
-    label: 'Teja',
-    bg: '#F2B807',
-    pattern: 'teja',
-  },
-  {
-    id: 'bg-calado',
-    label: 'Calado',
-    bg: '#FDF6E3',
-    pattern: 'calado',
-  },
-  {
-    id: 'bg-festival',
-    label: 'Festival',
-    bg: '#E02828',
-    pattern: 'festival',
-  },
-  {
-    id: 'bg-ink',
-    label: 'Noche',
-    bg: '#121212',
-    pattern: null,
-  },
-  {
-    id: 'bg-verde',
-    label: 'Verde Flora',
-    bg: '#1E8C86',
-    pattern: null,
-  },
-  {
-    id: 'bg-blue',
-    label: 'Azul Caribe',
-    bg: '#1DB3E7',
-    pattern: null,
-  },
-  {
-    id: 'bg-rojo',
-    label: 'Rojo Picó',
-    bg: '#E02828',
-    pattern: null,
-  },
+  { id: 'bg-noche', label: 'Noche', bg: '#0F172A', pattern: null },
+  { id: 'bg-ceniza', label: 'Ceniza', bg: '#4B5563', pattern: null },
+  { id: 'bg-tierra', label: 'Tierra', bg: '#8D442B', pattern: null },
+  { id: 'bg-violeta', label: 'Violeta', bg: '#5B21B6', pattern: 'dots' },
+  { id: 'bg-cyan', label: 'Cian', bg: '#0E7490', pattern: 'dots' },
+  { id: 'bg-verde', label: 'Verde Bosque', bg: '#065F46', pattern: null },
+  { id: 'bg-naranja', label: 'Naranja Profundo', bg: '#C2410C', pattern: null },
+  { id: 'bg-magenta', label: 'Magenta', bg: '#7C2D12', pattern: 'lines' },
 ];
