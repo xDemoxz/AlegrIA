@@ -5,11 +5,11 @@ import BaldosaPattern from '../../components/motifs/BaldosaPattern';
 
 const PATTERNS = { calado: CaladoPattern, teja: TejaPattern, baldosa: BaldosaPattern };
 
-function ColorDot({ color, selected, onClick }) {
+function ColorDot({ color, selected, onPointerDown }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onPointerDown={onPointerDown}
       className={`w-4 h-4 rounded-full border-2 transition-all duration-150 ${selected ? 'border-white' : 'border-white/40 hover:border-white'}`}
       style={{ backgroundColor: color }}
       aria-label={color}
@@ -55,7 +55,7 @@ export default function PosterSticker({ sticker, onDragStart, selectedVariant })
     <div>
       <button
         type="button"
-        onPointerDown={(e) => onDragStart(sticker.id, e.clientX, e.clientY)}
+        onPointerDown={(e) => onDragStart(sticker.id, e.clientX, e.clientY, selectedVariant)}
         className="relative w-full aspect-[3/4] rounded-sticker shadow-soft overflow-hidden cursor-grab active:cursor-grabbing touch-none transition-all duration-200 ease-pop hover:-translate-y-1 hover:rotate-1 hover:shadow-soft-lg active:translate-y-0 active:rotate-0 active:shadow-pressed bg-white"
         title={hasVariants ? `${sticker.label} (${sticker.variants.length} colores)` : sticker.label}
         aria-label={hasVariants ? `Stampella ${sticker.label}, colores disponibles` : `Stampella ${sticker.label}`}
@@ -91,9 +91,9 @@ export default function PosterSticker({ sticker, onDragStart, selectedVariant })
           {sticker.variants.map((v, i) => (
             <ColorDot
               key={i}
-              color={v.name === 'Amarillo' ? '#F2B807' : v.name === 'Verde' ? '#1E8C86' : v.name === 'Azul' ? '#1DB3E7' : v.name === 'Rojo' ? '#E02828' : v.name === 'Fucsia' ? '#D946EF' : v.name === 'Carmesi' ? '#991B1B' : v.name === 'Negro' ? '#121212' : v.name === 'Dorado' ? '#FCD34D' : v.name === 'Gris claro' ? '#E5E7EB' : v.name === 'Gris oscuro' ? '#374151' : '#F2B807'}
+              color={v.color || '#F2B807'}
               selected={selectedVariant === i}
-              onClick={(e) => {
+              onPointerDown={(e) => {
                 e.stopPropagation();
                 onDragStart(sticker.id, e.clientX, e.clientY, i);
               }}

@@ -92,17 +92,24 @@ export default function HomeApp() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-yellow overflow-x-hidden">
+      {/* Patrón de cuadros global (tipo header) */}
+      <div className="absolute inset-0 bg-baldosa opacity-[0.08] pointer-events-none z-0 mix-blend-multiply" />
+      
       <HeaderBanner hidden={headerHidden} />
       <ModuleNav active={section} onSelect={handleNavSelect} headerHidden={headerHidden} />
-      {/* Spacer para header+nav fixed: colapsa 56/64px cuando header se oculta para ganar viewport */}
+      {/* Spacer para header+nav fixed: altura constante para evitar saltos y scroll thrashing */}
       <div
         aria-hidden="true"
-        className={`shrink-0 transition-all duration-300 ease-out ${headerHidden ? 'h-[48px]' : 'h-[104px] md:h-[112px]'}`}
+        className="shrink-0 h-[104px] md:h-[112px]"
       />
 
-      <StoryCarousel />
-      <HomeMuralBanner />
-      <main id="main-content" className="relative z-[2] flex-1 scroll-mt-[56px]">
+      {section === SECTION.MOD1_TIMELINE && (
+        <>
+          <StoryCarousel />
+          <HomeMuralBanner />
+        </>
+      )}
+      <main id="main-content" className="relative z-[2] flex-1 flex flex-col scroll-mt-[56px]">
         <ActiveModule />
       </main>
 

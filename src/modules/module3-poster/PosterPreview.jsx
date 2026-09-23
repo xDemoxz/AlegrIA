@@ -20,7 +20,7 @@ const PATTERNS = { calado: CaladoPattern, teja: TejaPattern, baldosa: BaldosaPat
  * Fade-in (bg-fade-in) para transición.
  */
 const PosterPreview = forwardRef(function PosterPreview(
-  { title, text, activeStickerId, activeBackgroundId, stickerVariants, onSave, saving },
+  { title, text, activeStickerId, activeBackgroundId, stickerVariants = {}, onSave, saving },
   canvasRef
 ) {
   const activeBg = activeBackgroundId ? BACKGROUNDS.find((b) => b.id === activeBackgroundId) : null;
@@ -32,15 +32,16 @@ const PosterPreview = forwardRef(function PosterPreview(
   const isFestival = bgPatternKey === 'festival';
   const bgKey = activeBg ? activeBg.id : 'default';
 
-  // Imagen efectiva de la estampita (teniendo en cuenta variantes)
-  const stickerVariantIdx = activeStickerId ? stickerVariants[activeStickerId] : 0;
+  const variantVal = activeStickerId ? stickerVariants[activeStickerId] : undefined;
+  const stickerVariantIdx = variantVal !== undefined ? variantVal : 0;
   const effectiveStickerImg = activeSticker?.variants?.[stickerVariantIdx]?.image ?? activeSticker?.image;
   const hasImage = !!effectiveStickerImg;
   const hasBg = !!activeBg;
   const hasSticker = !!activeSticker;
 
   return (
-    <div className="h-full flex items-center justify-center bg-red-dark p-8">
+    <div className="relative h-full flex items-center justify-center bg-red-dark p-8 overflow-hidden">
+      <div className="absolute inset-0 bg-baldosa opacity-[0.2] pointer-events-none" />
       <div
         ref={canvasRef}
         className="relative w-full max-w-[420px] aspect-[9/16] rounded-sticker shadow-soft-lg overflow-hidden select-none"
@@ -56,14 +57,6 @@ const PosterPreview = forwardRef(function PosterPreview(
             )}
             {ActivePattern ? (
               <ActivePattern className="absolute inset-0 pointer-events-none" opacity={0.16} />
-            ) : !isFestival ? (
-              <div
-                className="absolute inset-0 opacity-[0.18] pointer-events-none"
-                style={{
-                  backgroundImage: 'radial-gradient(#F2B807 1.5px, transparent 1.5px)',
-                  backgroundSize: '16px 24px',
-                }}
-              />
             ) : null}
             {/* velo ink suave para que el fondo no compita */}
             <div className="absolute inset-0 bg-ink/18 pointer-events-none" />

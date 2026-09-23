@@ -113,7 +113,7 @@ export default function Module3Poster() {
   }, [reset]);
 
   return (
-    <section className="grid" style={{ gridTemplateColumns: 'minmax(320px, 460px) 1fr', minHeight: '80vh' }}>
+    <section className="grid flex-1" style={{ gridTemplateColumns: 'minmax(320px, 460px) 1fr', minHeight: '80vh' }}>
       <PosterForm
         title={title}
         onTitleChange={setTitle}
@@ -123,6 +123,8 @@ export default function Module3Poster() {
         onBgDragStart={onBgDragStart}
         onBack={prev}
         onReset={handleReset}
+        activeStickerId={activeStickerId}
+        stickerVariants={stickerVariants}
       />
       <PosterPreview
         ref={canvasRef}
@@ -130,6 +132,7 @@ export default function Module3Poster() {
         text={text}
         activeStickerId={activeStickerId}
         activeBackgroundId={activeBackgroundId}
+        stickerVariants={stickerVariants}
         onSave={handleSave}
         saving={saving}
       />
