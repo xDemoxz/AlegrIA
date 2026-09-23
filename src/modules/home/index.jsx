@@ -18,7 +18,7 @@ import Module2FuturoTeaser from '../module2-future';
 export default function Home() {
   return (
     <>
-      <div className="pb-16 md:pb-20">
+      <div className="pb-8 md:pb-10">
         <Module1Timeline />
       </div>
       <Module2FuturoTeaser />

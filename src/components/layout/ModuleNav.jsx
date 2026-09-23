@@ -17,17 +17,22 @@ const ITEMS = [
  * v2: sin contorno duro, sticky bajo el header, azul caribe para el estado
  * activo (con leve elevación en hover/activo).
  */
-export default function ModuleNav({ active, onSelect }) {
+export default function ModuleNav({ active, onSelect, headerHidden = false }) {
   return (
-    <nav className="relative z-[2] flex flex-wrap gap-3 justify-center bg-ink px-5 py-3.5 border-b border-white/10 sticky top-[72px] backdrop-blur-sm">
+    <nav
+      className={`fixed inset-x-0 z-40 flex flex-wrap gap-2 md:gap-3 justify-center bg-ink/95 backdrop-blur-sm px-4 md:px-5 border-b border-white/10 h-[48px] items-center transition-all duration-300 ease-out will-change-transform ${
+        headerHidden ? 'top-0' : 'top-[56px] md:top-[64px]'
+      }`}
+    >
       {ITEMS.map((item) => {
         const isActive = item.section === active;
         return (
           <button
             key={item.section}
             type="button"
+            aria-current={isActive ? 'page' : undefined}
             onClick={() => onSelect(item.section)}
-            className={`font-display text-base tracking-wide px-5 pt-2 pb-1.5 rounded-pill border-2 transition-all duration-200 ease-pop ${
+            className={`font-display text-sm md:text-base tracking-wide px-4 md:px-5 pt-2 pb-1.5 rounded-pill border-2 transition-all duration-200 ease-pop ${
               isActive ? 'shadow-soft -translate-y-0.5' : 'hover:-translate-y-0.5 hover:shadow-soft'
             }`}
             style={{
