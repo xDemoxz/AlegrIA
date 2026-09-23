@@ -8,13 +8,7 @@
  * Imports Cinzel + Inter fonts required by the 3D UI components.
  */
 
-import { useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-
 export default function Module2Future() {
-  const navigate = useNavigate()
-  const handleLaunch = useCallback(() => navigate('/futuro'), [navigate])
-
   return (
     <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-[#06040a] via-[#0a0a14] to-[#0e0a06] px-6 py-20 text-center">
       {/* Ambient particles */}
@@ -54,8 +48,10 @@ export default function Module2Future() {
           fragmentos del pasado de Barrio Abajo.
         </p>
 
-        <button
-          onClick={handleLaunch}
+        <a
+          href="https://zerik-official.github.io/AlegrIA-3D/"
+          target="_blank"
+          rel="noopener noreferrer"
           className="mt-10 inline-flex items-center gap-3 rounded-full bg-gradient-to-b from-[#ffcc33] to-[#ffb400] px-8 py-4 text-[13px] font-bold tracking-[0.18em] uppercase text-[#1a1205] shadow-[0_8px_30px_rgba(255,180,40,0.3),inset_0_1px_0_rgba(255,255,255,0.5)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-[0_12px_40px_rgba(255,180,40,0.5)]"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -63,7 +59,7 @@ export default function Module2Future() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Iniciar experiencia 3D
-        </button>
+        </a>
 
         <p className="mt-5 text-[11px] tracking-wide text-[#f5e6c8]/30">
           Requiere teclado y mouse • WASD para moverse • Click para interactuar
