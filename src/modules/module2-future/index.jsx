@@ -1,40 +1,19 @@
 /**
- * Module 2 — "Futuro" wrapper.
- * Loads the 3D experience (library → wormhole → museum) within the AlegrIA platform.
+ * Module 2 — teaser de "Futuro".
+ * Vive apilado debajo de la línea de tiempo dentro del home (ver
+ * src/modules/home). Solo muestra la info + el botón "Iniciar experiencia
+ * 3D" — la experiencia en sí corre en la ruta standalone /futuro (ver
+ * src/pages/FuturoExperiencePage.jsx), para no cargar Three.js en el home
+ * ni competir visualmente con el chasis del sistema de diseño.
  * Imports Cinzel + Inter fonts required by the 3D UI components.
  */
 
-import { useState, useCallback, lazy, Suspense } from 'react'
-import { createPortal } from 'react-dom'
-
-// Lazy-load the 3D experience to avoid loading Three.js on page load
-const Experience3D = lazy(() => import('./Experience3D'))
+import { useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Module2Future() {
-  const [active, setActive] = useState(false)
-
-  const handleLaunch = useCallback(() => setActive(true), [])
-  const handleExit = useCallback(() => setActive(false), [])
-
-  if (active) {
-    return (
-      <Suspense
-        fallback={createPortal(
-          <div className="fixed inset-0 flex items-center justify-center bg-[#06040a]" style={{ zIndex: 2147483647 }}>
-            <div className="text-center">
-              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-[#c9a86a]/30 border-t-[#ffcc33]" />
-              <p className="mt-4 text-sm tracking-[0.2em] uppercase text-[#f5e6c8]/60" style={{ fontFamily: "'Cinzel', serif" }}>
-                Cargando experiencia…
-              </p>
-            </div>
-          </div>,
-          document.body
-        )}
-      >
-        <Experience3D onExit={handleExit} />
-      </Suspense>
-    )
-  }
+  const navigate = useNavigate()
+  const handleLaunch = useCallback(() => navigate('/futuro'), [navigate])
 
   return (
     <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-[#06040a] via-[#0a0a14] to-[#0e0a06] px-6 py-20 text-center">

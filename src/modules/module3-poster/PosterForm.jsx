@@ -1,5 +1,7 @@
 import { STICKERS } from './data/stickers';
+import { BACKGROUNDS } from './data/backgrounds';
 import PosterSticker from './PosterSticker';
+import PosterBackground from './PosterBackground';
 import PopButton from '../../components/controls/PopButton';
 
 /** Badge circular "?" con tooltip nativo — misma idea del mockup.
@@ -30,6 +32,7 @@ export default function PosterForm({
   text,
   onTextChange,
   onStickerDragStart,
+  onBgDragStart,
   onBack,
   onReset,
 }) {
@@ -69,10 +72,22 @@ export default function PosterForm({
         </div>
       </div>
 
+      <div className="flex flex-col gap-2.5">
+        <div className="flex items-center gap-2.5">
+          <span className="font-display text-lg tracking-wide">3. Elige un fondo (SVG)</span>
+          <HelpBadge hint="Fondos 100% SVG/CSS, sin imágenes externas. Arrastra uno al cartel igual que las estampitas — reemplaza el fondo actual." />
+        </div>
+        <div className="grid grid-cols-4 gap-3">
+          {BACKGROUNDS.map((bg) => (
+            <PosterBackground key={bg.id} bg={bg} onDragStart={onBgDragStart} />
+          ))}
+        </div>
+      </div>
+
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2.5">
           <label className="font-display text-lg tracking-wide" htmlFor="poster-text">
-            3. Escribe el texto que llevará tu cartel
+            4. Escribe el texto que llevará tu cartel
           </label>
         </div>
         <div className="flex items-center gap-2.5">
