@@ -101,7 +101,6 @@ export default function Module3Poster() {
     try {
       await exportPosterToPng(canvasRef.current, `${title || 'cartel'}-alegria.png`);
       setToast('Cartel guardado ✓');
-      setTimeout(() => next(), 900);
     } catch (err) {
       console.error('[Módulo 3] No se pudo exportar el cartel:', err);
       const msg = err?.message ?? String(err);
@@ -115,7 +114,7 @@ export default function Module3Poster() {
     } finally {
       setSaving(false);
     }
-  }, [title, next]);
+  }, [title]);
 
   const handleReset = useCallback(() => {
     reset();
