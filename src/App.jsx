@@ -1,24 +1,24 @@
-import { useAppStore, SECTION } from './store/useAppStore';
-import HeaderBanner from './components/layout/HeaderBanner';
-import MarqueeStrip from './components/layout/MarqueeStrip';
-import ModuleNav from './components/layout/ModuleNav';
-import FooterBajero from './components/layout/FooterBajero';
-import BaldosaPattern from './components/motifs/BaldosaPattern';
-import GestureCursor from './components/controls/GestureCursor';
-import StoryCarousel from './components/media/StoryCarousel';
-import HomeMuralBanner from './components/media/HomeMuralBanner';
+import { useAppStore, SECTION } from "./store/useAppStore"
+import HeaderBanner from "./components/layout/HeaderBanner"
+import MarqueeStrip from "./components/layout/MarqueeStrip"
+import ModuleNav from "./components/layout/ModuleNav"
+import FooterBajero from "./components/layout/FooterBajero"
+import BaldosaPattern from "./components/motifs/BaldosaPattern"
+import GestureCursor from "./components/controls/GestureCursor"
+import StoryCarousel from "./components/media/StoryCarousel"
+import HomeMuralBanner from "./components/media/HomeMuralBanner"
 
-import Module1Timeline from './modules/module1-timeline';
-import Module2Future from './modules/module2-future';
-import Module3Poster from './modules/module3-poster';
-import Module4AR from './modules/module4-ar';
+import Module1Timeline from "./modules/module1-timeline"
+import Module2Future from "./modules/module2-future"
+import Module3Poster from "./modules/module3-poster"
+import Module4AR from "./modules/module4-ar"
 
 const MODULES = {
   [SECTION.MOD1_TIMELINE]: Module1Timeline,
   [SECTION.MOD2_FUTURE]: Module2Future,
   [SECTION.MOD3_POSTER]: Module3Poster,
-  [SECTION.MOD4_AR]: Module4AR,
-};
+  [SECTION.MOD4_AR]: Module4AR
+}
 
 /**
  * App — chasis global de AlegrIA. Renderiza header/marquee/nav/footer del
@@ -41,21 +41,26 @@ const MODULES = {
  * ya responde a gestos sin cambios adicionales.
  */
 export default function App() {
-  const section = useAppStore((s) => s.section);
-  const goTo = useAppStore((s) => s.goTo);
-  const gestureControlEnabled = useAppStore((s) => s.gestureControlEnabled);
-  const toggleGestureControl = useAppStore((s) => s.toggleGestureControl);
-  const ActiveModule = MODULES[section];
+  const section = useAppStore((s) => s.section)
+  const goTo = useAppStore((s) => s.goTo)
+  const gestureControlEnabled = useAppStore((s) => s.gestureControlEnabled)
+  const toggleGestureControl = useAppStore((s) => s.toggleGestureControl)
+  const ActiveModule = MODULES[section]
 
   return (
     <div className="relative flex flex-col min-h-screen bg-yellow overflow-x-hidden">
-      <BaldosaPattern className="absolute inset-0 pointer-events-none" opacity={0.13} />
+      <BaldosaPattern
+        className="absolute inset-0 pointer-events-none"
+        opacity={0.13}
+      />
 
       <HeaderBanner />
-      <MarqueeStrip />
+      <ModuleNav
+        active={section}
+        onSelect={goTo}
+      />
       <StoryCarousel />
       <HomeMuralBanner />
-      <ModuleNav active={section} onSelect={goTo} />
 
       <main className="relative z-[2] flex-1">
         <ActiveModule />
@@ -72,10 +77,13 @@ export default function App() {
         type="button"
         onClick={toggleGestureControl}
         className="fixed bottom-4 right-4 z-[999] font-display text-sm tracking-wide leading-none px-5 pt-2.5 pb-2 rounded-pill shadow-soft transition-all duration-200 ease-pop hover:-translate-y-0.5 hover:shadow-soft-lg active:translate-y-0 active:shadow-pressed"
-        style={{ background: gestureControlEnabled ? '#E02828' : '#FDF6E3', color: gestureControlEnabled ? '#fff' : '#0F5F5A' }}
+        style={{
+          background: gestureControlEnabled ? "#E02828" : "#FDF6E3",
+          color: gestureControlEnabled ? "#fff" : "#0F5F5A"
+        }}
       >
-        {gestureControlEnabled ? 'GESTOS: ON' : 'GESTOS: OFF'}
+        {gestureControlEnabled ? "GESTOS: ON" : "GESTOS: OFF"}
       </button>
     </div>
-  );
+  )
 }
