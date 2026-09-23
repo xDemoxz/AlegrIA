@@ -93,7 +93,10 @@ export default function Module3Poster() {
   );
 
   const handleSave = useCallback(async () => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current) {
+      setToast('Error: no se encuentra el área del cartel');
+      return;
+    }
     setSaving(true);
     try {
       await exportPosterToPng(canvasRef.current, `${title || 'cartel'}-alegria.png`);
@@ -101,7 +104,14 @@ export default function Module3Poster() {
       setTimeout(() => next(), 900);
     } catch (err) {
       console.error('[Módulo 3] No se pudo exportar el cartel:', err);
-      setToast('No se pudo guardar — revisa la consola');
+      const msg = err?.message ?? String(err);
+      if (msg.includes('blob') || msg.includes('toBlob')) {
+        setToast('Error generando la imagen — intenta de nuevo');
+      } else if (msg.includes('html2canvas') || msg.includes('canvas')) {
+        setToast('Error renderizando — revisa la consola (F12)');
+      } else {
+        setToast('No se pudo guardar — revisa la consola (F12)');
+      }
     } finally {
       setSaving(false);
     }
