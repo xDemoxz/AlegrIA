@@ -11,31 +11,12 @@ import { BACKGROUNDS } from './data/backgrounds';
 /**
  * MÓDULO 3 — Generador de Pósters / Murales (José Romero)
  * ------------------------------------------------------------------
- * Estampitas: src/modules/module3-poster/data/stickers.js (placeholders de
- * color — reemplazar `bg`/`pattern` por `image` cuando lleguen las
- * ilustraciones reales).
- *
- * Arrastre: NO usa HTML5 drag nativo — usa Pointer Events a propósito, para
- * que el mismo código funcione con mouse, touch Y con los gestos de tu
- * compañero (ver src/lib/gestureBridge.js). No hace falta tocar este
- * archivo para conectar su sistema: el bridge ya traduce sus eventos a
- * pointerdown/pointermove/pointerup reales sobre estos mismos elementos.
- *
- * Modelo de "fondo, no pegatina": al soltar una estampita sobre el cartel
- * NO queda un ícono fijo en esa posición — la estampita reemplaza por
- * completo el fondo del cartel (color + patrón, ver PosterPreview). Solo
- * importa cuál fue la última que soltaste; por eso solo se necesita
- * rastrear el punto donde sueltas (para saber si cayó dentro del canvas),
- * no una posición que guardar.
- *
- * Flujo: al guardar el cartel se exporta a PNG (html2canvas) y se avanza al
- * Módulo 4 automáticamente.
- *
- * Próxima fase (pendiente, no implementada aquí): concepto de "murales" —
- * cada estampita representaría un lugar real de Barrio Abajo en vez de un
- * tema genérico. Necesita el fondo/mapa del barrio y las fotos/ilustraciones
- * de cada lugar antes de poder implementarse; el modelo de estado ya quedó
- * preparado para ese cambio (una sola estampita "activa" define el fondo).
+ * Capas: fondo SVG/CSS (BACKGROUNDS, semi-transparente, no protagonista) +
+ * estampita PNG protagonista centrada encima. Ambas se eligen por drag &
+ * drop con Pointer Events (no HTML5 drag) para compat con mouse/touch/
+ * gestureBridge. Cada capa reemplaza solo a su tipo: fondo no borra
+ * estampita y viceversa. Orden recomendado en UI: fondo primero (2), luego
+ * estampita (3).
  */
 export default function Module3Poster() {
   const prev = useAppStore((s) => s.prev);
@@ -48,18 +29,20 @@ export default function Module3Poster() {
     setText,
     activeStickerId,
     activeBackgroundId,
+    stickerVariants,
     setBackground,
     setBackgroundFromBg,
+    setStickerVariant,
     reset,
   } = usePosterState();
 
   const canvasRef = useRef(null);
-  const [dragState, setDragState] = useState(null); // { type:'sticker'|'bg', id, x, y } | null
+  const [dragState, setDragState] = useState(null); // { type:'sticker'|'bg', id, x, y, variantIndex? } | null
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const handleDragStart = useCallback((type, id, x, y) => {
-    setDragState({ type, id, x, y });
+  const handleDragStart = useCallback((type, id, x, y, variantIndex) => {
+    setDragState({ type, id, x, y, variantIndex });
   }, []);
 
   // Un solo listener global de pointer mientras hay un drag activo
@@ -91,12 +74,13 @@ export default function Module3Poster() {
   );
 
   const onStickerDragStart = useCallback(
-    (stickerId, x, y) => {
-      const initial = { type: 'sticker', id: stickerId, x, y };
-      handleDragStart('sticker', stickerId, x, y);
+    (stickerId, x, y, variantIndex) => {
+      if (variantIndex !== undefined) setStickerVariant(stickerId, variantIndex);
+      const initial = { type: 'sticker', id: stickerId, x, y, variantIndex };
+      handleDragStart('sticker', stickerId, x, y, variantIndex);
       attachDragListeners(initial);
     },
-    [handleDragStart, attachDragListeners]
+    [handleDragStart, attachDragListeners, setStickerVariant]
   );
 
   const onBgDragStart = useCallback(
@@ -109,19 +93,28 @@ export default function Module3Poster() {
   );
 
   const handleSave = useCallback(async () => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current) {
+      setToast('Error: no se encuentra el área del cartel');
+      return;
+    }
     setSaving(true);
     try {
       await exportPosterToPng(canvasRef.current, `${title || 'cartel'}-alegria.png`);
       setToast('Cartel guardado ✓');
-      setTimeout(() => next(), 900);
     } catch (err) {
       console.error('[Módulo 3] No se pudo exportar el cartel:', err);
-      setToast('No se pudo guardar — revisa la consola');
+      const msg = err?.message ?? String(err);
+      if (msg.includes('blob') || msg.includes('toBlob')) {
+        setToast('Error generando la imagen — intenta de nuevo');
+      } else if (msg.includes('html2canvas') || msg.includes('canvas')) {
+        setToast('Error renderizando — revisa la consola (F12)');
+      } else {
+        setToast('No se pudo guardar — revisa la consola (F12)');
+      }
     } finally {
       setSaving(false);
     }
-  }, [title, next]);
+  }, [title]);
 
   const handleReset = useCallback(() => {
     reset();
@@ -129,7 +122,7 @@ export default function Module3Poster() {
   }, [reset]);
 
   return (
-    <section className="grid" style={{ gridTemplateColumns: 'minmax(320px, 460px) 1fr', minHeight: '80vh' }}>
+    <section className="grid flex-1" style={{ gridTemplateColumns: 'minmax(320px, 460px) 1fr', minHeight: '80vh' }}>
       <PosterForm
         title={title}
         onTitleChange={setTitle}
@@ -139,6 +132,8 @@ export default function Module3Poster() {
         onBgDragStart={onBgDragStart}
         onBack={prev}
         onReset={handleReset}
+        activeStickerId={activeStickerId}
+        stickerVariants={stickerVariants}
       />
       <PosterPreview
         ref={canvasRef}
@@ -146,6 +141,7 @@ export default function Module3Poster() {
         text={text}
         activeStickerId={activeStickerId}
         activeBackgroundId={activeBackgroundId}
+        stickerVariants={stickerVariants}
         onSave={handleSave}
         saving={saving}
       />
@@ -173,23 +169,26 @@ export default function Module3Poster() {
             );
           }
           const s = STICKERS.find((x) => x.id === dragState.id);
-          return (
-            <div
-              className="fixed z-[998] w-20 h-20 rounded-sticker pointer-events-none bg-white shadow-soft-lg overflow-hidden flex items-center justify-center"
-              style={{
-                left: dragState.x,
-                top: dragState.y,
-                transform: 'translate(-50%, -50%) rotate(-2deg)',
-                boxShadow: '0 0 0 3px rgba(255,255,255,0.6), 0 14px 32px -8px rgb(18 18 18 / 0.35)',
-              }}
-            >
-              {s?.image ? (
-                <img src={s.image} alt={s.label} className="w-full h-full object-contain p-1.5" />
-              ) : (
-                <div className="w-full h-full" style={{ background: s?.bg ?? '#1DB3E7' }} />
-              )}
-            </div>
-          );
+            const variantImg = s?.variants?.[dragState.variantIndex ?? 0]?.image ?? s?.image;
+            return (
+              <div
+                className="fixed z-[998] w-20 h-20 rounded-sticker pointer-events-none bg-white shadow-soft-lg overflow-hidden flex items-center justify-center"
+                style={{
+                  left: dragState.x,
+                  top: dragState.y,
+                  transform: 'translate(-50%, -50%) rotate(-2deg)',
+                  boxShadow: '0 0 0 3px rgba(255,255,255,0.6), 0 14px 32px -8px rgb(18 18 18 / 0.35)',
+                }}
+              >
+                {variantImg ? (
+                  <img src={variantImg} alt={s.label} className="w-full h-full object-contain p-1.5" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center" style={{ background: s?.bg ?? '#1DB3E7' }}>
+                    <span className="text-[10px] font-bold text-white px-1 text-center">{s?.label}</span>
+                  </div>
+                )}
+              </div>
+            );
         })()}
 
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}

@@ -8,20 +8,62 @@ export async function exportPosterToPng(node, filename = 'cartel-alegria.png') {
   if (!node) throw new Error('exportPosterToPng: no se recibió el nodo del canvas');
 
   const { default: html2canvas } = await import('html2canvas');
+
+  // Esperar a que las imágenes dentro del nodo estén cargadas
+  const images = node.querySelectorAll('img');
+  await Promise.all(
+    Array.from(images).map((img) => {
+      if (img.complete) return Promise.resolve();
+      return new Promise((resolve) => {
+        img.addEventListener('load', resolve, { once: true });
+        img.addEventListener('error', resolve, { once: true });
+      });
+    })
+  );
+
   const canvas = await html2canvas(node, {
     backgroundColor: null,
     scale: 2,
     useCORS: true,
+    logging: true,
+    foreignObjectRendering: true, // Evita error "unsupported color function oklab"
+    onclone: (clonedDoc) => {
+      // Asegurar que las imágenes clonas tengan crossOrigin
+      clonedDoc.querySelectorAll('img').forEach((img) => {
+        img.crossOrigin = 'anonymous';
+      });
+      // Forzar colores computados a formato compatible (hex/rgb) para html2canvas
+      const walker = document.createTreeWalker(clonedDoc.body, NodeFilter.SHOW_ELEMENT);
+      while (walker.nextNode()) {
+        const el = walker.currentNode;
+        const style = clonedDoc.defaultView.getComputedStyle(el);
+        ['backgroundColor', 'color', 'borderColor', 'boxShadow'].forEach((prop) => {
+          const val = style.getPropertyValue(prop);
+          if (val && (val.includes('oklab') || val.includes('oklch'))) {
+            // html2canvas no soporta oklab/oklch; forzar a rgb
+            el.style.setProperty(prop, val.replace(/okla?b?\([^)]+\)/g, 'transparent'));
+          }
+        });
+      }
+    },
   });
 
-  const dataUrl = canvas.toDataURL('image/png');
+  // Usar blob en lugar de data URL para evitar bloqueos de descarga en algunos navegadores
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+  if (!blob) throw new Error('No se pudo generar el blob de la imagen');
+
+  const url = URL.createObjectURL(blob);
 
   const link = document.createElement('a');
-  link.href = dataUrl;
+  link.href = url;
   link.download = filename;
+  link.rel = 'noopener';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 
-  return dataUrl;
+  // Limpiar el object URL después de un tiempo
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  return url;
 }

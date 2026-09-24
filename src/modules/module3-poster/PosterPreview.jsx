@@ -20,89 +20,87 @@ const PATTERNS = { calado: CaladoPattern, teja: TejaPattern, baldosa: BaldosaPat
  * Fade-in (bg-fade-in) para transición.
  */
 const PosterPreview = forwardRef(function PosterPreview(
-  { title, text, activeStickerId, activeBackgroundId, onSave, saving },
+  { title, text, activeStickerId, activeBackgroundId, stickerVariants = {}, onSave, saving },
   canvasRef
 ) {
   const activeBg = activeBackgroundId ? BACKGROUNDS.find((b) => b.id === activeBackgroundId) : null;
-  const activeSticker = !activeBg && activeStickerId ? STICKERS.find((s) => s.id === activeStickerId) : null;
-  const bgHex = activeBg?.bg ?? activeSticker?.bg ?? '#1DB3E7';
-  const bgPatternKey = activeBg?.pattern ?? activeSticker?.pattern ?? null;
+  const activeSticker = activeStickerId ? STICKERS.find((s) => s.id === activeStickerId) : null;
+
+  const bgHex = activeBg?.bg ?? (activeSticker?.bg ?? '#1DB3E7');
+  const bgPatternKey = activeBg?.pattern ?? null;
   const ActivePattern = bgPatternKey && bgPatternKey !== 'festival' ? PATTERNS[bgPatternKey] : null;
   const isFestival = bgPatternKey === 'festival';
-  const bgKey = activeBg ? activeBg.id : activeSticker ? activeSticker.id : 'default';
-  const hasImage = !!activeSticker?.image;
+  const bgKey = activeBg ? activeBg.id : 'default';
+
+  const variantVal = activeStickerId ? stickerVariants[activeStickerId] : undefined;
+  const stickerVariantIdx = variantVal !== undefined ? variantVal : 0;
+  const effectiveStickerImg = activeSticker?.variants?.[stickerVariantIdx]?.image ?? activeSticker?.image;
+  const hasImage = !!effectiveStickerImg;
   const hasBg = !!activeBg;
+  const hasSticker = !!activeSticker;
 
   return (
-    <div className="h-full flex items-center justify-center bg-red-dark p-8">
+    <div className="relative h-full flex items-center justify-center bg-red-dark p-8 overflow-hidden">
+      <div className="absolute inset-0 bg-baldosa opacity-[0.2] pointer-events-none" />
       <div
         ref={canvasRef}
         className="relative w-full max-w-[420px] aspect-[9/16] rounded-sticker shadow-soft-lg overflow-hidden select-none"
         style={{ background: 'linear-gradient(180deg, #121212 0%, #1a1a1a 55%, #121212 100%)' }}
       >
+        {/* Capa 1 — Fondo SVG/CSS semi-transparente (no tapa estampita) */}
         {hasBg ? (
-          <>
+          <div key={`bg-${bgKey}`} className="absolute inset-0 pointer-events-none" style={{ animation: 'bg-fade-in 0.5s ease-out' }}>
             {isFestival ? (
-              <div key={`bg-${bgKey}`} className="absolute inset-0 bg-festival pointer-events-none" style={{ animation: 'bg-fade-in 0.5s ease-out' }} />
+              <div className="absolute inset-0 bg-festival opacity-[0.55]" />
             ) : (
-              <div key={`bg-${bgKey}`} className="absolute inset-0 pointer-events-none" style={{ background: bgHex, animation: 'bg-fade-in 0.5s ease-out' }} />
+              <div className="absolute inset-0 opacity-[0.48]" style={{ background: bgHex }} />
             )}
             {ActivePattern ? (
-              <ActivePattern key={`pattern-${bgKey}`} className="absolute inset-0 pointer-events-none" opacity={isFestival ? 0 : 0.22} />
-            ) : !isFestival ? (
-              <div
-                key={`pattern-${bgKey}`}
-                className="absolute inset-0 opacity-30 pointer-events-none"
-                style={{
-                  backgroundImage: 'radial-gradient(#F2B807 1.5px, transparent 1.5px)',
-                  backgroundSize: '16px 24px',
-                  animation: 'bg-fade-in 0.5s ease-out',
-                }}
-              />
+              <ActivePattern className="absolute inset-0 pointer-events-none" opacity={0.16} />
             ) : null}
-          </>
-        ) : hasImage ? (
-          <>
-            <div
-              key={`image-${bgKey}`}
-              className="absolute inset-0 pointer-events-none bg-ink"
-              style={{
-                backgroundImage: `url(${activeSticker.image})`,
-                backgroundSize: activeSticker.id === 'st-mariposas' ? 'cover' : 'contain',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                animation: 'bg-fade-in 0.5s ease-out',
-              }}
-            />
-            <div className="absolute inset-0 bg-ink/55 pointer-events-none" />
-          </>
+            {/* velo ink suave para que el fondo no compita */}
+            <div className="absolute inset-0 bg-ink/18 pointer-events-none" />
+          </div>
         ) : (
-          <>
-            <div
-              key={`tint-${bgKey}`}
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: `radial-gradient(circle at 50% 78%, ${bgHex}59, transparent 45%)`,
-                animation: 'bg-fade-in 0.5s ease-out',
-              }}
-            />
-            {ActivePattern ? (
-              <ActivePattern key={`pattern-${bgKey}`} className="absolute inset-0 pointer-events-none" opacity={0.22} />
-            ) : (
-              <div
-                key={`pattern-${bgKey}`}
-                className="absolute inset-0 opacity-40 pointer-events-none"
-                style={{
-                  backgroundImage: 'radial-gradient(#F2B807 1px, transparent 1px)',
-                  backgroundSize: '14px 22px',
-                  maskImage: 'linear-gradient(90deg, black 0 18%, transparent 18% 100%)',
-                  WebkitMaskImage: 'linear-gradient(90deg, black 0 18%, transparent 18% 100%)',
-                  animation: 'bg-fade-in 0.5s ease-out',
-                }}
-              />
-            )}
-          </>
+          <div
+            key="tint-default"
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `radial-gradient(circle at 50% 78%, #1DB3E759, transparent 45%)`,
+              animation: 'bg-fade-in 0.5s ease-out',
+            }}
+          />
         )}
+
+        {/* Capa 2 — Estampita protagonista centrada sobre el fondo */}
+        {hasSticker && hasImage ? (
+          <div
+            key={`sticker-${activeSticker.id}-${stickerVariantIdx ?? 0}`}
+            className="absolute inset-0 pointer-events-none flex items-center justify-center p-6"
+            style={{ animation: 'bg-fade-in 0.5s ease-out' }}
+          >
+            <img
+              src={effectiveStickerImg}
+              alt={activeSticker.label}
+              className="max-w-[78%] max-h-[52%] w-auto h-auto object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.55)]"
+              draggable={false}
+            />
+          </div>
+        ) : hasSticker && !hasImage ? (
+          <div
+            key={`sticker-color-${activeSticker.id}`}
+            className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 w-[62%] aspect-square rounded-sticker pointer-events-none flex items-center justify-center shadow-soft-lg"
+            style={{ background: activeSticker.bg, animation: 'bg-fade-in 0.5s ease-out' }}
+          >
+            {activeSticker.pattern && PATTERNS[activeSticker.pattern] ? (
+              (() => {
+                const P = PATTERNS[activeSticker.pattern];
+                return <P className="absolute inset-0 rounded-sticker overflow-hidden" opacity={0.22} />;
+              })()
+            ) : null}
+            <span className="relative font-display text-xl tracking-wide text-white drop-shadow px-3 text-center">{activeSticker.label}</span>
+          </div>
+        ) : null}
 
         {/* Halo de luna */}
         <div
@@ -120,16 +118,21 @@ const PosterPreview = forwardRef(function PosterPreview(
           )}
         </div>
 
-        {/* Foco / plaza inferior — tinte de la estampita activa */}
+        {/* Foco / plaza inferior — tinte del fondo (si hay) */}
         <div
           key={`plaza-${bgKey}`}
           className="absolute left-1/2 bottom-24 -translate-x-1/2 w-[85%] h-20 rounded-[50%] pointer-events-none"
-          style={{ background: `${bgHex}47`, animation: 'bg-fade-in 0.5s ease-out' }}
+          style={{ background: `${bgHex}34`, animation: 'bg-fade-in 0.5s ease-out' }}
         />
 
-        {!activeSticker && !activeBg && (
+        {!hasBg && !hasSticker && (
           <p className="absolute inset-x-6 bottom-28 text-center text-[13px] font-semibold text-cream/70">
-            Arrastra una estampita o un fondo aquí
+            Arrastra un fondo y luego una estampita
+          </p>
+        )}
+        {hasBg && !hasSticker && (
+          <p className="absolute inset-x-6 bottom-28 text-center text-[13px] font-semibold text-cream/70">
+            Fondo listo — ahora arrastra una estampita protagonista
           </p>
         )}
 
