@@ -2,42 +2,38 @@ import { forwardRef } from 'react';
 import { STICKERS } from './data/stickers';
 import { BACKGROUNDS } from './data/backgrounds';
 import PopButton from '../../components/controls/PopButton';
-import CaladoPattern from '../../components/motifs/CaladoPattern';
-import TejaPattern from '../../components/motifs/TejaPattern';
-import BaldosaPattern from '../../components/motifs/BaldosaPattern';
 
-const PATTERNS = { calado: CaladoPattern, teja: TejaPattern, baldosa: BaldosaPattern };
+/** Ancho base de una estampita colocada, en % del ancho del cartel (× scale). */
+const STICKER_BASE_WIDTH_PCT = 30;
 
 /**
- * PosterPreview — panel derecho: el cartel/mural en vivo. `canvasRef` se
- * usa para 1) que index.jsx sepa si soltaste dentro del canvas y 2)
- * exportar a PNG con html2canvas.
+ * PosterPreview — panel derecho: el cartel en vivo. `canvasRef` se usa para
+ * 1) que index.jsx sepa dónde cae lo que sueltas y 2) exportar a PNG con
+ * html2canvas.
  *
- * v2 + modelo "fondo, no pegatina": la estampita o fondo que sueltas NO
- * queda pegada como ícono — reemplaza el fondo completo del cartel (tinte
- * de color + patrón vernáculo o imagen PNG). Fondo SVG (BACKGROUNDS) tiene
- * prioridad si existe; si no, usa estampita. Sin ninguno se ve tinte azul.
- * Fade-in (bg-fade-in) para transición.
+ * Capas (de abajo hacia arriba): fondo (imagen, intercambiable) → estampitas
+ * colocadas (movibles, con tamaño y orden de apilado) → título/subtítulo.
+ * Todo control de edición (anillo, −/+/✕, hints, botón guardar) lleva
+ * data-html2canvas-ignore para que NO aparezca en el PNG exportado.
  */
 const PosterPreview = forwardRef(function PosterPreview(
-  { title, text, activeStickerId, activeBackgroundId, stickerVariants = {}, onSave, saving },
+  {
+    title,
+    text,
+    activeBackgroundId,
+    placedStickers = [],
+    selectedUid,
+    onSelectSticker,
+    onPlacedDragStart,
+    onResizeSticker,
+    onRemoveSticker,
+    onSave,
+    saving,
+  },
   canvasRef
 ) {
   const activeBg = activeBackgroundId ? BACKGROUNDS.find((b) => b.id === activeBackgroundId) : null;
-  const activeSticker = activeStickerId ? STICKERS.find((s) => s.id === activeStickerId) : null;
-
-  const bgHex = activeBg?.bg ?? (activeSticker?.bg ?? '#1DB3E7');
-  const bgPatternKey = activeBg?.pattern ?? null;
-  const ActivePattern = bgPatternKey && bgPatternKey !== 'festival' ? PATTERNS[bgPatternKey] : null;
-  const isFestival = bgPatternKey === 'festival';
-  const bgKey = activeBg ? activeBg.id : 'default';
-
-  const variantVal = activeStickerId ? stickerVariants[activeStickerId] : undefined;
-  const stickerVariantIdx = variantVal !== undefined ? variantVal : 0;
-  const effectiveStickerImg = activeSticker?.variants?.[stickerVariantIdx]?.image ?? activeSticker?.image;
-  const hasImage = !!effectiveStickerImg;
-  const hasBg = !!activeBg;
-  const hasSticker = !!activeSticker;
+  const isDarkText = activeBg?.tone === 'dark';
 
   return (
     <div className="relative h-full flex items-center justify-center bg-red-dark p-8 overflow-hidden">
@@ -46,97 +42,122 @@ const PosterPreview = forwardRef(function PosterPreview(
         ref={canvasRef}
         className="relative w-full max-w-[420px] aspect-[9/16] rounded-sticker shadow-soft-lg overflow-hidden select-none"
         style={{ background: 'linear-gradient(180deg, #121212 0%, #1a1a1a 55%, #121212 100%)' }}
+        onPointerDown={(e) => {
+          if (!e.target.closest('[data-placed-sticker]')) onSelectSticker(null);
+        }}
       >
-        {/* Capa 1 — Fondo SVG/CSS semi-transparente (no tapa estampita) */}
-        {hasBg ? (
-          <div key={`bg-${bgKey}`} className="absolute inset-0 pointer-events-none" style={{ animation: 'bg-fade-in 0.5s ease-out' }}>
-            {isFestival ? (
-              <div className="absolute inset-0 bg-festival opacity-[0.55]" />
-            ) : (
-              <div className="absolute inset-0 opacity-[0.48]" style={{ background: bgHex }} />
-            )}
-            {ActivePattern ? (
-              <ActivePattern className="absolute inset-0 pointer-events-none" opacity={0.16} />
-            ) : null}
-            {/* velo ink suave para que el fondo no compita */}
-            <div className="absolute inset-0 bg-ink/18 pointer-events-none" />
-          </div>
+        {/* Capa 1 — Fondo */}
+        {activeBg ? (
+          <img
+            key={activeBg.id}
+            src={activeBg.image}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+            style={{ objectPosition: activeBg.position, animation: 'bg-fade-in 0.5s ease-out' }}
+          />
         ) : (
           <div
-            key="tint-default"
             className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `radial-gradient(circle at 50% 78%, #1DB3E759, transparent 45%)`,
-              animation: 'bg-fade-in 0.5s ease-out',
-            }}
+            style={{ background: 'radial-gradient(circle at 50% 78%, #1DB3E759, transparent 45%)' }}
           />
         )}
 
-        {/* Capa 2 — Estampita protagonista centrada sobre el fondo */}
-        {hasSticker && hasImage ? (
-          <div
-            key={`sticker-${activeSticker.id}-${stickerVariantIdx ?? 0}`}
-            className="absolute inset-0 pointer-events-none flex items-center justify-center p-6"
-            style={{ animation: 'bg-fade-in 0.5s ease-out' }}
-          >
-            <img
-              src={effectiveStickerImg}
-              alt={activeSticker.label}
-              className="max-w-[78%] max-h-[52%] w-auto h-auto object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.55)]"
-              draggable={false}
-            />
-          </div>
-        ) : hasSticker && !hasImage ? (
-          <div
-            key={`sticker-color-${activeSticker.id}`}
-            className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 w-[62%] aspect-square rounded-sticker pointer-events-none flex items-center justify-center shadow-soft-lg"
-            style={{ background: activeSticker.bg, animation: 'bg-fade-in 0.5s ease-out' }}
-          >
-            {activeSticker.pattern && PATTERNS[activeSticker.pattern] ? (
-              (() => {
-                const P = PATTERNS[activeSticker.pattern];
-                return <P className="absolute inset-0 rounded-sticker overflow-hidden" opacity={0.22} />;
-              })()
-            ) : null}
-            <span className="relative font-display text-xl tracking-wide text-white drop-shadow px-3 text-center">{activeSticker.label}</span>
-          </div>
-        ) : null}
+        {/* Capa 2 — Estampitas colocadas (la última queda arriba) */}
+        {placedStickers.map((p) => {
+          const sticker = STICKERS.find((s) => s.id === p.stickerId);
+          if (!sticker) return null;
+          const img = sticker.variants?.[p.variantIndex]?.image ?? sticker.image;
+          const selected = p.uid === selectedUid;
+          return (
+            <div
+              key={p.uid}
+              data-placed-sticker
+              onPointerDown={(e) => {
+                e.preventDefault();
+                onPlacedDragStart(p.uid, e.clientX, e.clientY);
+              }}
+              className="absolute cursor-grab active:cursor-grabbing touch-none"
+              style={{
+                left: `${p.xPct}%`,
+                top: `${p.yPct}%`,
+                width: `${STICKER_BASE_WIDTH_PCT * p.scale}%`,
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              {img ? (
+                <img
+                  src={img}
+                  alt={sticker.label}
+                  draggable={false}
+                  className="block w-full h-auto object-contain pointer-events-none drop-shadow-[0_6px_14px_rgba(0,0,0,0.45)]"
+                />
+              ) : (
+                <div className="aspect-square w-full rounded-sticker" style={{ background: sticker.bg }} />
+              )}
 
-        {/* Halo de luna */}
-        <div
-          className="absolute top-8 right-10 w-16 h-16 rounded-pill pointer-events-none"
-          style={{ background: '#FDF6E3', boxShadow: '0 0 30px 10px rgba(253,246,227,0.5)' }}
-        />
+              {selected && (
+                <>
+                  <span
+                    data-html2canvas-ignore
+                    aria-hidden="true"
+                    className="pointer-events-none absolute -inset-1 rounded-lg ring-2 ring-white/80"
+                  />
+                  <div
+                    data-html2canvas-ignore
+                    className="absolute -top-9 left-1/2 flex -translate-x-1/2 gap-1"
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
+                    <ControlButton label="Reducir estampita" onClick={() => onResizeSticker(p.uid, -0.15)}>
+                      −
+                    </ControlButton>
+                    <ControlButton label="Agrandar estampita" onClick={() => onResizeSticker(p.uid, 0.15)}>
+                      +
+                    </ControlButton>
+                    <ControlButton label="Quitar estampita" danger onClick={() => onRemoveSticker(p.uid)}>
+                      ✕
+                    </ControlButton>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
 
         {/* Título + subtítulo */}
-        <div className="relative z-10 text-center px-6 pt-10">
-          <h2 className="font-display text-4xl leading-none tracking-wide text-white uppercase break-words">
+        <div className="pointer-events-none relative z-10 text-center px-6 pt-10">
+          <h2
+            className={`font-display text-4xl leading-none tracking-wide uppercase break-words ${
+              isDarkText ? 'text-ink' : 'text-white'
+            }`}
+            style={{ textShadow: isDarkText ? '0 1px 0 rgba(255,255,255,0.5)' : '0 2px 10px rgba(0,0,0,0.55)' }}
+          >
             {title || 'TU NOMBRE'}
           </h2>
           {text && (
-            <p className="font-body text-base font-medium text-cream mt-3 italic break-words">{text}</p>
+            <p
+              className={`font-body text-base font-semibold mt-3 italic break-words ${
+                isDarkText ? 'text-ink' : 'text-cream'
+              }`}
+              style={{ textShadow: isDarkText ? 'none' : '0 1px 8px rgba(0,0,0,0.6)' }}
+            >
+              {text}
+            </p>
           )}
         </div>
 
-        {/* Foco / plaza inferior — tinte del fondo (si hay) */}
-        <div
-          key={`plaza-${bgKey}`}
-          className="absolute left-1/2 bottom-24 -translate-x-1/2 w-[85%] h-20 rounded-[50%] pointer-events-none"
-          style={{ background: `${bgHex}34`, animation: 'bg-fade-in 0.5s ease-out' }}
-        />
-
-        {!hasBg && !hasSticker && (
-          <p className="absolute inset-x-6 bottom-28 text-center text-[13px] font-semibold text-cream/70">
-            Arrastra un fondo y luego una estampita
-          </p>
-        )}
-        {hasBg && !hasSticker && (
-          <p className="absolute inset-x-6 bottom-28 text-center text-[13px] font-semibold text-cream/70">
-            Fondo listo — ahora arrastra una estampita protagonista
+        {(!activeBg || placedStickers.length === 0) && (
+          <p
+            data-html2canvas-ignore
+            className="pointer-events-none absolute inset-x-6 bottom-28 text-center text-[13px] font-semibold text-cream/90 drop-shadow"
+          >
+            {!activeBg
+              ? 'Arrastra un fondo al cartel'
+              : 'Fondo listo — arrastra estampitas encima'}
           </p>
         )}
 
-        <div className="absolute left-0 right-0 bottom-6 flex justify-center">
+        <div data-html2canvas-ignore className="absolute left-0 right-0 bottom-6 flex justify-center">
           <PopButton
             variant="secondary"
             className="!bg-[#FFDC43] !text-ink hover:!bg-[#F2B807]"
@@ -150,5 +171,21 @@ const PosterPreview = forwardRef(function PosterPreview(
     </div>
   );
 });
+
+function ControlButton({ children, label, danger = false, onClick }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      className={`flex h-7 w-7 items-center justify-center rounded-pill text-sm font-bold shadow-soft transition-transform duration-150 ease-pop hover:scale-110 ${
+        danger ? 'bg-red text-white' : 'bg-cream text-ink'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 export default PosterPreview;
