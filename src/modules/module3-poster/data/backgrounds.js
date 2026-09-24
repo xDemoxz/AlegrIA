@@ -1,15 +1,48 @@
 /**
- * Fondos del generador de pósters (Módulo 3) — SVG/CSS, sin assets.
- * Colores neutros (sin amarillo) + patrones sutiles (no calado/diamante).
- * Cada fondo puede tener pattern: 'dots', 'lines', 'grid' o null.
+ * Fondos del generador de pósters (Módulo 3) — imágenes de public/assets/fondos.
+ * El participante los arrastra al cartel y puede cambiarlos las veces que
+ * quiera; las estampitas se colocan encima.
+ *
+ * tone: color del título/subtítulo para que se lea sobre el fondo
+ *   ('light' = texto claro, 'dark' = texto oscuro).
+ * position: object-position al recortar la imagen (el cartel es 9:16 y los
+ *   fondos son ~3:4, así que se recortan los lados). En la máscara de plumas
+ *   se ancla a la derecha para no cortar la máscara.
  */
 export const BACKGROUNDS = [
-  { id: 'bg-noche', label: 'Noche', bg: '#0F172A', pattern: null },
-  { id: 'bg-ceniza', label: 'Ceniza', bg: '#4B5563', pattern: null },
-  { id: 'bg-tierra', label: 'Tierra', bg: '#8D442B', pattern: null },
-  { id: 'bg-violeta', label: 'Violeta', bg: '#5B21B6', pattern: 'dots' },
-  { id: 'bg-cyan', label: 'Cian', bg: '#0E7490', pattern: 'dots' },
-  { id: 'bg-verde', label: 'Verde Bosque', bg: '#065F46', pattern: null },
-  { id: 'bg-naranja', label: 'Naranja Profundo', bg: '#C2410C', pattern: null },
-  { id: 'bg-magenta', label: 'Magenta', bg: '#7C2D12', pattern: 'lines' },
+  {
+    id: 'bg-confeti',
+    label: 'Confeti',
+    image: '/assets/fondos/confeti-nocturno.webp',
+    tone: 'light',
+    position: 'center',
+  },
+  {
+    id: 'bg-carnaval',
+    label: 'Carnaval',
+    image: '/assets/fondos/carnaval-amarillo.webp',
+    tone: 'dark',
+    position: 'center',
+  },
+  {
+    id: 'bg-selva',
+    label: 'Selva',
+    image: '/assets/fondos/selva-tropical.webp',
+    tone: 'light',
+    position: 'center',
+  },
+  {
+    id: 'bg-neon',
+    label: 'Neón',
+    image: '/assets/fondos/neon-festival.webp',
+    tone: 'light',
+    position: 'center',
+  },
+  {
+    id: 'bg-mascara',
+    label: 'Máscara',
+    image: '/assets/fondos/mascara-plumas.webp',
+    tone: 'light',
+    position: 'right center',
+  },
 ];

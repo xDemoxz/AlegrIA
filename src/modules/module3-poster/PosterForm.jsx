@@ -35,7 +35,7 @@ export default function PosterForm({
   onBgDragStart,
   onBack,
   onReset,
-  activeStickerId,
+  activeBackgroundId,
   stickerVariants,
 }) {
   return (
@@ -64,20 +64,25 @@ export default function PosterForm({
 
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center gap-2.5">
-          <span className="font-display text-lg tracking-wide">2. Elige un fondo (SVG)</span>
-          <HelpBadge hint="Quedará detrás, semi-transparente — no le quita protagonismo a la estampita. Arrastra uno al cartel; el siguiente fondo reemplaza solo la capa base." />
+          <span className="font-display text-lg tracking-wide">2. Arrastra un fondo al cartel</span>
+          <HelpBadge hint="Suelta uno sobre el cartel a la derecha. Puedes cambiarlo las veces que quieras: las estampitas que ya pusiste se quedan donde están." />
         </div>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-2.5">
           {BACKGROUNDS.map((bg) => (
-            <PosterBackground key={bg.id} bg={bg} onDragStart={onBgDragStart} />
+            <PosterBackground
+              key={bg.id}
+              bg={bg}
+              active={activeBackgroundId === bg.id}
+              onDragStart={onBgDragStart}
+            />
           ))}
         </div>
       </div>
 
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center gap-2.5">
-          <span className="font-display text-lg tracking-wide">3. Arrastra una estampita (protagonista)</span>
-          <HelpBadge hint="Va sobre el fondo, al centro y a todo color. La última estampita manda, pero no borra el fondo." />
+          <span className="font-display text-lg tracking-wide">3. Pon estampitas encima</span>
+          <HelpBadge hint="Arrastra las que quieras sobre el cartel (puedes repetirlas). Luego muévelas arrastrándolas, y toca una para agrandarla, achicarla o quitarla." />
         </div>
         <div className="grid grid-cols-4 gap-3">
           {STICKERS.map((s) => (
@@ -85,7 +90,7 @@ export default function PosterForm({
               key={s.id}
               sticker={s}
               onDragStart={onStickerDragStart}
-              selectedVariant={activeStickerId === s.id ? stickerVariants[s.id] : undefined}
+              selectedVariant={stickerVariants[s.id]}
             />
           ))}
         </div>
