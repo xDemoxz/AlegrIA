@@ -18,9 +18,12 @@ import { BACKGROUNDS } from './data/backgrounds';
  * estampita y viceversa. Orden recomendado en UI: fondo primero (2), luego
  * estampita (3).
  */
-export default function Module3Poster() {
+export default function Module3Poster({ onBack: onBackProp } = {}) {
   const prev = useAppStore((s) => s.prev);
   const next = useAppStore((s) => s.next);
+  // En página standalone (/poster) el volver navega al home; dentro del
+  // switcher legacy usa prev() del store. Prop opcional, compatible.
+  const onBack = onBackProp ?? prev;
 
   const {
     title,
@@ -130,7 +133,7 @@ export default function Module3Poster() {
         onTextChange={setText}
         onStickerDragStart={onStickerDragStart}
         onBgDragStart={onBgDragStart}
-        onBack={prev}
+        onBack={onBack}
         onReset={handleReset}
         activeStickerId={activeStickerId}
         stickerVariants={stickerVariants}
