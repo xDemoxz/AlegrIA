@@ -11,10 +11,9 @@ import { AR_PIECES } from './arPieces';
  * con 9 targets) y se publica en ZapWorks. Aquí solo vive la invitación;
  * el botón navega a la ruta standalone /ra (src/pages/RAExperiencePage.jsx),
  * que embebe la experiencia publicada en un iframe a pantalla completa,
- * igual que el Módulo 2 usa /futuro.
+ * igual que el Módulo 2 enlaza a su build deployada en GitHub Pages.
  *
- * Así el runtime de Zappar (cámara + WebAssembly) no se carga en el home
- * ni compite con el WebGL del Módulo 2.
+ * Así el runtime de Zappar (cámara + WebAssembly) no se carga en el home.
  */
 export default function Module4AR({ onBack } = {}) {
   const navigate = useNavigate();

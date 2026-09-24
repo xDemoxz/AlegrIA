@@ -8,7 +8,7 @@ Plataforma web (Vite + React 18 + Tailwind CSS v4) con 4 módulos interactivos s
 
 **Los 4 módulos:**
 1. **Línea de tiempo** (`src/modules/module1-timeline`) — hitos históricos, cronología con `TimelineRail`/`TimelineBadge`.
-2. **Futuro** (`src/modules/module2-future`) — experiencia 3D en primera persona (biblioteca → wormhole → museo), adaptada del repo `AlegrIA-3D` de un compañero (Three.js + @react-three/fiber + @react-three/drei). Usa TypeScript dentro de un proyecto JSX (`tsconfig.json` relajado: `allowJs: true, checkJs: false, strict: false`).
+2. **Futuro** (`src/modules/module2-future`) — teaser (info + botón "Iniciar experiencia 3D") que enlaza en pestaña nueva a la build deployada en `https://zerik-official.github.io/AlegrIA-3D/`. La experiencia 3D en sí (biblioteca → wormhole → museo, Three.js + @react-three/fiber + @react-three/drei, adaptada del repo `AlegrIA-3D` de un compañero) **ya no vive en este proyecto**: se removió `Experience3D.tsx`, la ruta `/futuro`, `src/pages/FuturoExperiencePage.jsx` y las dependencias three.js/@react-three, porque solo se usaba el teaser y el motor local pesaba sin aportar nada (mismo criterio que el Módulo 4 con `/ra`). `tsconfig.json` relajado (`allowJs: true, checkJs: false, strict: false`) queda como remanente de esa integración TS — ya no hay archivos `.ts`/`.tsx` en el repo, así que es candidato a limpieza si nada nuevo lo necesita.
 3. **Póster** (`src/modules/module3-poster`) — generador de carteles. Las "estampitas" se arrastran (Pointer Events, no drag nativo) y **reemplazan todo el fondo del cartel** al soltarse — no quedan como ícono fijo. Solo importa la última estampita soltada (`activeStickerId` en `usePosterState.js`). Fase futura pendiente: "murales" — cada estampita representará un lugar real del barrio.
 4. **AR** (`src/modules/module4-ar`) — no implementado todavía.
 
@@ -51,14 +51,11 @@ feature/module3-poster-backgrounds (7a9c2c7)     ← construida DIRECTO desde de
 - Fixes → `fix/*`. Features → `feature/*`. **Nunca commitear directo a `develop`.**
 - Antes de crear una rama nueva, verificar que `develop` esté realmente actualizado con todo lo que debería estar mergeado (este incidente pasó porque no lo estaba).
 
-## Integración del Módulo 2 (3D) — notas técnicas
+## Integración del Módulo 2 (3D) — histórico (removida)
 
-- Repo original del compañero: `AlegrIA-3D` (TypeScript, Three.js). Se adaptó a convivir con el resto del proyecto (JSX) vía `tsconfig.json` relajado y `src/global.d.ts` (augmentación de tipos JSX de R3F).
-- **Lazy loading**: `Experience3D` se carga con `lazy()` en `index.jsx` del módulo, para no meter Three.js en el bundle inicial.
-- **Fix de z-index/stacking context**: la experiencia 3D se monta con `createPortal(..., document.body)` y `zIndex: 2147483647`, tanto en el componente principal como en el fallback de `Suspense`. Sin esto, el layout general (`App.jsx` tiene un botón de gestos con `z-[999]`) se sobreponía visualmente ("se veía amarillo" — el fondo del layout ganaba la capa). **No reducir el z-index ni quitar el portal** sin entender por qué se puso.
-- HUD y overlays del 3D (`features/ui/components/HUD.tsx`) usan estilos hardcodeados (`fontFamily: "'Cinzel', serif"`, hex directos como `#f5e6c8`) en vez de tokens de Tailwind, porque el repo original tenía tokens custom (`font-cinzel`, `text-gold`, etc.) que no existen en el theme de este proyecto.
-- Fuentes Cinzel + Inter se cargan vía `@import url(...)` en `src/styles/theme.v4.css`.
-- Estructura de modelos 3D: `public/models/{library,museum,pedestal,wormhole}/` — vacíos, esperando `.glb` reales exportados de Blender. Mientras no existan, `ModelLoader` usa geometría procedural de fallback (hace `HEAD` check al archivo).
+El motor 3D local (`Experience3D.tsx`, `features/{library,museum,pedestal,player,ui,wormhole}`, `models/`, `shared/`, la ruta `/futuro` y `src/pages/FuturoExperiencePage.jsx`) se eliminó del proyecto: la app ya no lo usaba porque el botón del teaser fue cambiado para enlazar directo a la build deployada del compañero (`https://zerik-official.github.io/AlegrIA-3D/`), así que el código local solo pesaba (three.js + @react-three/fiber + @react-three/drei en `package.json`, `src/global.d.ts` de augmentación de tipos R3F) sin ejecutarse nunca. Lo único que queda de ese módulo es el teaser (`src/modules/module2-future/index.jsx`).
+
+Si en el futuro se vuelve a traer el motor 3D adentro del proyecto (en vez de enlazar afuera), revisar el repo original `AlegrIA-3D` del compañero para el fix de z-index/stacking context que tenía (`createPortal(..., document.body)` + `zIndex: 2147483647` en el componente y en el fallback de `Suspense`, necesario porque el layout general se sobreponía visualmente) y los estilos hardcodeados de HUD (`fontFamily: "'Cinzel', serif"`, hex directos) que dependían de tokens custom (`font-cinzel`, `text-gold`) inexistentes en este theme.
 
 ## Comandos útiles
 

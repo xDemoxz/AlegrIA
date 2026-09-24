@@ -2,10 +2,10 @@
  * Module 2 — teaser de "Futuro".
  * Vive apilado debajo de la línea de tiempo dentro del home (ver
  * src/modules/home). Solo muestra la info + el botón "Iniciar experiencia
- * 3D" — la experiencia en sí corre en la ruta standalone /futuro (ver
- * src/pages/FuturoExperiencePage.jsx), para no cargar Three.js en el home
- * ni competir visualmente con el chasis del sistema de diseño.
- * Imports Cinzel + Inter fonts required by the 3D UI components.
+ * 3D", que abre en pestaña nueva la build deployada en
+ * https://zerik-official.github.io/AlegrIA-3D/. La experiencia 3D ya no
+ * vive dentro de este proyecto (se removió Experience3D.tsx y todo su
+ * motor Three.js/@react-three) para no cargar ese peso en el bundle.
  */
 
 export default function Module2Future() {

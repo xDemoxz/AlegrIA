@@ -1,7 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import HomeApp from './pages/HomeApp';
-import FuturoExperiencePage from './pages/FuturoExperiencePage';
 import PosterPage from './pages/PosterPage';
 import ARPage from './pages/ARPage';
 
@@ -13,9 +12,11 @@ const RAExperiencePage = lazy(() => import('./pages/RAExperiencePage'));
  *
  * "/" — home estático (header + línea de tiempo + teaser + footer).
  *
- * "/futuro" — página standalone SOLO con la experiencia 3D del Módulo 2
- * (ver src/pages/FuturoExperiencePage.jsx), sin el chasis del sistema de
- * diseño, para que no compita con el WebGL a pantalla completa.
+ * El Módulo 2 "Futuro" ya no tiene una experiencia 3D local: el teaser
+ * (src/modules/module2-future/index.jsx) enlaza directo a la build
+ * deployada en https://zerik-official.github.io/AlegrIA-3D/ (mismo
+ * criterio que el Módulo 4 con /ra). El motor Three.js/@react-three que
+ * vivía en /futuro se eliminó del proyecto para no cargar ese peso.
  *
  * "/poster" — página standalone del generador de carteles del Módulo 3
  * (ver src/pages/PosterPage.jsx), sin switcher por store.
@@ -29,7 +30,6 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<HomeApp />} />
-      <Route path="/futuro" element={<FuturoExperiencePage />} />
       <Route path="/poster" element={<PosterPage />} />
       <Route path="/ar" element={<ARPage />} />
       <Route

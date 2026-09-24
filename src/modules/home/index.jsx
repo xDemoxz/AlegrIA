@@ -5,9 +5,8 @@ import Module2FuturoTeaser from '../module2-future';
  * Home — sección por defecto de la SPA (SECTION.MOD1_TIMELINE). Apila la
  * línea de tiempo (Módulo 1) y, justo debajo, el teaser del Módulo 2
  * "Futuro" (info + botón "Iniciar experiencia 3D"). La experiencia 3D en sí
- * NO vive aquí — el botón del teaser navega a la ruta /futuro
- * (src/pages/FuturoExperiencePage.jsx), una página standalone sin el
- * chasis del sistema de diseño.
+ * NO vive aquí ni en este proyecto — el botón del teaser abre en pestaña
+ * nueva la build deployada en https://zerik-official.github.io/AlegrIA-3D/.
  *
   * El <div> con pb separa las dos secciones a propósito: las tarjetas
   * del timeline usan `transform: rotate(...)` (efecto sticker inclinado),
