@@ -9,16 +9,17 @@ import Module2FuturoTeaser from '../module2-future';
  * (src/pages/FuturoExperiencePage.jsx), una página standalone sin el
  * chasis del sistema de diseño.
  *
- * El <div> con pb-16 separa las dos secciones a propósito: las tarjetas
- * del timeline usan `transform: rotate(...)` (efecto sticker inclinado),
- * que no cuenta para el alto de su caja de layout — sin este colchón, el
- * borde rotado queda visualmente superpuesto sobre el fondo oscuro del
- * teaser, que antes empezaba a 0px de distancia.
+  * El <div> con pb separa las dos secciones a propósito: las tarjetas
+  * del timeline usan `transform: rotate(...)` (efecto sticker inclinado),
+  * que no cuenta para el alto de su caja de layout — sin este colchón, el
+  * borde rotado queda visualmente superpuesto sobre el fondo oscuro del
+  * teaser, que antes empezaba a 0px de distancia. El fondo negro une
+  * la cola del timeline (#0d0d0d) con el gradiente oscuro del teaser.
  */
 export default function Home() {
   return (
     <>
-      <div className="pb-8 md:pb-10">
+      <div className="pb-8 md:pb-10 bg-[#0d0d0d]">
         <Module1Timeline />
       </div>
       <Module2FuturoTeaser />
