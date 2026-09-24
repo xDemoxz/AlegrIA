@@ -1,48 +1,45 @@
-import { useEffect } from 'react';
-import { useAppStore, SECTION } from './store/useAppStore';
-import HeaderBanner from './components/layout/HeaderBanner';
-import MarqueeStrip from './components/layout/MarqueeStrip';
-import FooterBajero from './components/layout/FooterBajero';
-import BaldosaPattern from './components/motifs/BaldosaPattern';
+import { lazy, Suspense } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import HomeApp from './pages/HomeApp';
+import FuturoExperiencePage from './pages/FuturoExperiencePage';
+import PosterPage from './pages/PosterPage';
+import ARPage from './pages/ARPage';
 
-import Module1Timeline from './modules/module1-timeline';
-import Module2Future from './modules/module2-future';
-import Module3Poster from './modules/module3-poster';
-import Module4AR from './modules/module4-ar';
-
-const MODULES = {
-  [SECTION.MOD1_TIMELINE]: Module1Timeline,
-  [SECTION.MOD2_FUTURE]: Module2Future,
-  [SECTION.MOD3_POSTER]: Module3Poster,
-  [SECTION.MOD4_AR]: Module4AR,
-};
+// Lazy: la página AR solo se descarga cuando el usuario entra a /ra.
+const RAExperiencePage = lazy(() => import('./pages/RAExperiencePage'));
 
 /**
- * App — chasis global de AlegrIA. Renderiza header/marquee/footer del
- * sistema de diseño una sola vez y conmuta el módulo activo según
- * useAppStore. Cada compañero trabaja dentro de su carpeta en
- * src/modules/** sin tocar este archivo.
+ * App — punto de entrada de rutas de AlegrIA.
+ *
+ * "/" — home estático (header + línea de tiempo + teaser + footer).
+ *
+ * "/futuro" — página standalone SOLO con la experiencia 3D del Módulo 2
+ * (ver src/pages/FuturoExperiencePage.jsx), sin el chasis del sistema de
+ * diseño, para que no compita con el WebGL a pantalla completa.
+ *
+ * "/poster" — página standalone del generador de carteles del Módulo 3
+ * (ver src/pages/PosterPage.jsx), sin switcher por store.
+ *
+ * "/ar" — página standalone del Módulo 4 (ver src/pages/ARPage.jsx): el teaser.
+ *
+ * "/ra" — la experiencia AR de Mattercraft embebida en un iframe a pantalla
+ * completa (ver src/pages/RAExperiencePage.jsx). El botón del teaser navega aquí.
  */
 export default function App() {
-  const section = useAppStore((s) => s.section);
-  const ActiveModule = MODULES[section];
-
-  // Reservado: aquí se conectará Lenis (smooth scroll) cuando el Módulo 1
-  // esté listo para consumirlo — no inicializar antes de tiempo.
-  useEffect(() => {}, []);
-
   return (
-    <div className="relative min-h-screen bg-yellow pb-24 overflow-hidden">
-      <BaldosaPattern className="absolute inset-0 pointer-events-none" opacity={0.13} />
-
-      <HeaderBanner />
-      <MarqueeStrip />
-
-      <main className="relative z-[2]">
-        <ActiveModule />
-      </main>
-
-      <FooterBajero />
-    </div>
+    <Routes>
+      <Route path="/" element={<HomeApp />} />
+      <Route path="/futuro" element={<FuturoExperiencePage />} />
+      <Route path="/poster" element={<PosterPage />} />
+      <Route path="/ar" element={<ARPage />} />
+      <Route
+        path="/ra"
+        element={
+          <Suspense fallback={<div className="fixed inset-0 bg-ink" />}>
+            <RAExperiencePage />
+          </Suspense>
+        }
+      />
+    </Routes>
   );
 }

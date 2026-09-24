@@ -1,0 +1,209 @@
+{
+  "logos": [
+    {
+      "src": "LOGO 2 EXPO BAQ 2050.png",
+      "clean": "logo-2-expo-baq-2050.png",
+      "path": "/assets/logos/logo-2-expo-baq-2050.png",
+      "sizeKB": 181
+    },
+    {
+      "src": "LOGO 3 EXPO BAQ 2050.png",
+      "clean": "logo-3-expo-baq-2050.png",
+      "path": "/assets/logos/logo-3-expo-baq-2050.png",
+      "sizeKB": 168
+    },
+    {
+      "src": "LOGO 4 EXPO BAQ 2050.png",
+      "clean": "logo-4-expo-baq-2050.png",
+      "path": "/assets/logos/logo-4-expo-baq-2050.png",
+      "sizeKB": 136
+    },
+    {
+      "src": "LOGO 5 EXPO BAQ 2050.png",
+      "clean": "logo-5-expo-baq-2050.png",
+      "path": "/assets/logos/logo-5-expo-baq-2050.png",
+      "sizeKB": 167
+    },
+    {
+      "src": "LOGO ALCALDIA.png",
+      "clean": "logo-alcaldia.png",
+      "path": "/assets/logos/logo-alcaldia.png",
+      "sizeKB": 1407
+    },
+    {
+      "src": "LOGO BARRIO ABAJO.png",
+      "clean": "logo-barrio-abajo.png",
+      "path": "/assets/logos/logo-barrio-abajo.png",
+      "sizeKB": 198
+    },
+    {
+      "src": "LOGO EXPO BAQ 2050.png",
+      "clean": "logo-expo-baq-2050.png",
+      "path": "/assets/logos/logo-expo-baq-2050.png",
+      "sizeKB": 174
+    },
+    {
+      "src": "LOGO FESTIVAL 2.png",
+      "clean": "logo-festival-2.png",
+      "path": "/assets/logos/logo-festival-2.png",
+      "sizeKB": 800
+    },
+    {
+      "src": "LOGO FESTIVAL 3.png",
+      "clean": "logo-festival-3.png",
+      "path": "/assets/logos/logo-festival-3.png",
+      "sizeKB": 815
+    },
+    {
+      "src": "LOGO FESTIVAL 4.png",
+      "clean": "logo-festival-4.png",
+      "path": "/assets/logos/logo-festival-4.png",
+      "sizeKB": 736
+    },
+    {
+      "src": "LOGO FESTIVAL.png",
+      "clean": "logo-festival.png",
+      "path": "/assets/logos/logo-festival.png",
+      "sizeKB": 780
+    },
+    {
+      "src": "LOGO RIWI GRUPO.png",
+      "clean": "logo-riwi-grupo.png",
+      "path": "/assets/logos/logo-riwi-grupo.png",
+      "sizeKB": 525
+    },
+    {
+      "src": "LOGO RIWI.png",
+      "clean": "logo-riwi.png",
+      "path": "/assets/logos/logo-riwi.png",
+      "sizeKB": 274
+    }
+  ],
+  "iconos": [
+    {
+      "src": "01 ALEGRIA 2 .png",
+      "clean": "01-alegria-2.png",
+      "path": "/assets/iconos/01-alegria-2.png"
+    },
+    {
+      "src": "01 ALEGRIA 3 .png",
+      "clean": "01-alegria-3.png",
+      "path": "/assets/iconos/01-alegria-3.png"
+    },
+    {
+      "src": "01 ALEGRIA.png",
+      "clean": "01-alegria.png",
+      "path": "/assets/iconos/01-alegria.png"
+    },
+    {
+      "src": "02 FLORES 2 .png",
+      "clean": "02-flores-2.png",
+      "path": "/assets/iconos/02-flores-2.png"
+    },
+    {
+      "src": "02 FLORES 3 .png",
+      "clean": "02-flores-3.png",
+      "path": "/assets/iconos/02-flores-3.png"
+    },
+    {
+      "src": "02 FLORES.png",
+      "clean": "02-flores.png",
+      "path": "/assets/iconos/02-flores.png"
+    },
+    {
+      "src": "03 TURBO 2 .png",
+      "clean": "03-turbo-2.png",
+      "path": "/assets/iconos/03-turbo-2.png"
+    },
+    {
+      "src": "03 TURBO 3 .png",
+      "clean": "03-turbo-3.png",
+      "path": "/assets/iconos/03-turbo-3.png"
+    },
+    {
+      "src": "03 TURBO.png",
+      "clean": "03-turbo.png",
+      "path": "/assets/iconos/03-turbo.png"
+    },
+    {
+      "src": "04 PONCHERA 2 .png",
+      "clean": "04-ponchera-2.png",
+      "path": "/assets/iconos/04-ponchera-2.png"
+    },
+    {
+      "src": "04 PONCHERA 3 .png",
+      "clean": "04-ponchera-3.png",
+      "path": "/assets/iconos/04-ponchera-3.png"
+    },
+    {
+      "src": "04 PONCHERA.png",
+      "clean": "04-ponchera.png",
+      "path": "/assets/iconos/04-ponchera.png"
+    },
+    {
+      "src": "05 RASPAO 2 .png",
+      "clean": "05-raspao-2.png",
+      "path": "/assets/iconos/05-raspao-2.png"
+    },
+    {
+      "src": "05 RASPAO 3 .png",
+      "clean": "05-raspao-3.png",
+      "path": "/assets/iconos/05-raspao-3.png"
+    },
+    {
+      "src": "05 RASPAO.png",
+      "clean": "05-raspao.png",
+      "path": "/assets/iconos/05-raspao.png"
+    },
+    {
+      "src": "06 CALADOS 2 .png",
+      "clean": "06-calados-2.png",
+      "path": "/assets/iconos/06-calados-2.png"
+    },
+    {
+      "src": "06 CALADOS 3 .png",
+      "clean": "06-calados-3.png",
+      "path": "/assets/iconos/06-calados-3.png"
+    },
+    {
+      "src": "06 CALADOS.png",
+      "clean": "06-calados.png",
+      "path": "/assets/iconos/06-calados.png"
+    },
+    {
+      "src": "07 MARIPOSAS .png",
+      "clean": "07-mariposas.png",
+      "path": "/assets/iconos/07-mariposas.png"
+    }
+  ],
+  "carrusel": [
+    {
+      "src": "C1.png",
+      "clean": "c1.png",
+      "path": "/assets/carrusel/c1.png"
+    },
+    {
+      "src": "C2.png",
+      "clean": "c2.png",
+      "path": "/assets/carrusel/c2.png"
+    },
+    {
+      "src": "C3.png",
+      "clean": "c3.png",
+      "path": "/assets/carrusel/c3.png"
+    },
+    {
+      "src": "C4.png",
+      "clean": "c4.png",
+      "path": "/assets/carrusel/c4.png"
+    },
+    {
+      "src": "C5.png",
+      "clean": "c5.png",
+      "path": "/assets/carrusel/c5.png"
+    }
+  ],
+  "meta": {
+    "notes": "HQ iconos only; descartados duplicados chicos; carrusel redimensionado a 1200w para web; texto quemado intacto; IMAGEN TRADICION / fondos historias / programacion ignorados por spec"
+  }
+}

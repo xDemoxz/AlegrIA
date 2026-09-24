@@ -1,0 +1,769 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
+
+/* Vars acotadas al módulo: nunca en :root para no fugar al resto del App */
+.timeline-module-root {
+  --bg: #0d0d0d;
+  --ink: #f5f1e8;
+  --accent: var(--color-yellow, #F2B807);
+  --card: var(--color-cream, #FDF6E3);
+  --line: rgba(255, 255, 255, 0.14);
+  --rail-top: 72%;
+  --polaroid-paper: #fcfbf8;
+}
+
+/* ==========================================================================
+   1. Canvas WebGL Túnel 3D & Efectos Cinematográficos
+   ========================================================================== */
+#tunnel-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2;
+  pointer-events: none;
+  display: block;
+}
+
+/* Viñeta de velocidad al scrollear rápido */
+#speed {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 38%,
+    rgba(0, 0, 0, 0.58) 72%,
+    rgba(242, 184, 7, 0.16) 100%
+  );
+  transition: opacity 0.15s ease-out;
+}
+
+/* Grano analógico de película */
+#grain {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* Aislamiento: las capas fixed del módulo no existen fuera de su recorrido
+   (ni pintan ni reciben nada cuando el pin no está activo) */
+.timeline-module-root:not(.module-active) #tunnel-canvas,
+.timeline-module-root:not(.module-active) #speed,
+.timeline-module-root:not(.module-active) #grain {
+  visibility: hidden;
+}
+
+/* ==========================================================================
+   2. HUD Superior
+   ========================================================================== */
+#hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1.1rem 1.6rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: #fff;
+}
+
+#hud.is-active {
+  opacity: 1;
+}
+
+.hud-kicker,
+#hud h1 {
+  display: none;
+}
+
+.hud-right {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.6rem;
+  text-align: right;
+}
+
+/* Año de la esquina: oculto salvo en fullview, con borde blanco mínimo */
+#hud-year {
+  display: none;
+}
+
+.timeline-module-root.is-fullview #hud-year {
+  display: block;
+  font-size: clamp(2rem, 5.5vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  padding: 0.2rem 0.8rem;
+  text-shadow: 0 1px 10px rgb(0 0 0 / 0.45);
+  transition: filter 0.15s ease;
+}
+
+#hud-year.rolling {
+  filter: blur(2px);
+}
+
+/* ==========================================================================
+   3. Pista de Tiempo Horizontal (Pineada por GSAP)
+   ========================================================================== */
+.timeline-module-root {
+  position: relative;
+  width: 100%;
+  background: var(--bg);
+}
+
+.timeline-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: transparent;
+}
+
+.timeline-track {
+  display: flex;
+  height: 100vh;
+  position: relative;
+  will-change: transform;
+}
+
+/* Tramo final vacío tras el último hito */
+.end-cap {
+  width: 60vw;
+  height: 100vh;
+  flex-shrink: 0;
+}
+
+/* Rail horizontal continuo que viaja con el track */
+.rail-line {
+  position: absolute;
+  top: var(--rail-top);
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.16);
+  z-index: 4;
+  pointer-events: none;
+}
+
+.rail-line::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.4) 0 2px,
+    transparent 2px 48px
+  );
+}
+
+.rail-progress {
+  position: absolute;
+  inset: 0;
+  background: var(--color-red, #E02828);
+  transform: scaleX(0);
+  transform-origin: left center;
+  box-shadow: 0 0 12px rgb(224 40 40 / 0.55);
+}
+
+/* ==========================================================================
+   4. Panel 0: Overview (Timeline Clásica de Polaroids)
+   ========================================================================== */
+.overview {
+  width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: visible;
+  padding-top: 2rem;
+}
+
+.overview-inner {
+  text-align: center;
+  max-width: min(1180px, 96vw);
+}
+
+.overview-kicker {
+  font-size: 0.76rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+  font-weight: 700;
+  will-change: transform;
+}
+
+.overview-title {
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
+  font-weight: 800;
+  font-family: var(--font-display, 'Bebas Neue', Impact, sans-serif);
+  letter-spacing: 0.04em;
+  margin-bottom: 0.6rem;
+  color: #fff;
+  will-change: transform;
+}
+
+/* Titular persistente dentro del overview: solo se oculta en fullview
+   (foto limpia). Sin transiciones: aparece tal cual, sin animación. */
+.timeline-module-root.is-fullview .overview-kicker,
+.timeline-module-root.is-fullview .overview-title {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.classic-timeline {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--eras-count, 11), 1fr);
+  align-items: stretch;
+  width: min(1140px, 96vw);
+  margin: 0.6rem auto 1rem;
+  padding: 0 0.5rem;
+}
+
+.classic-axis {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 3px;
+}
+
+.classic-end,
+.classic-now {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  background: var(--bg);
+  padding: 0 0.5rem;
+  color: #fff;
+  font-weight: 700;
+}
+
+.classic-start { left: 4px; }
+.classic-now { right: 4px; }
+
+.classic-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 48vh;
+  justify-content: center;
+}
+
+.classic-node.is-top { flex-direction: column; }
+.classic-node.is-top .overview-polaroid { order: 1; margin-bottom: 0.8rem; transform: rotate(-3.5deg); }
+.classic-node.is-top .classic-tick { order: 2; }
+.classic-node.is-top .classic-dot { order: 3; }
+
+.classic-node.is-bottom .classic-dot { order: 1; }
+.classic-node.is-bottom .classic-tick { order: 2; }
+.classic-node.is-bottom .overview-polaroid { order: 3; margin-top: 0.8rem; transform: rotate(3deg); }
+
+.classic-tick {
+  width: 2px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.classic-dot {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 3px solid var(--accent);
+  transform: translateY(-50%);
+  box-shadow: 0 0 10px rgba(242, 184, 7, 0.6);
+}
+
+/* Polaroid en el overview (formato auténtico SX-70) */
+.overview-polaroid {
+  background: linear-gradient(172deg, #ffffff 0%, #f7f4ee 80%, #eee9de 100%);
+  color: #111;
+  border: none;
+  cursor: pointer;
+  padding: 5px 5px 14px 5px;
+  border-radius: 2px;
+  width: clamp(75px, 7.5vw, 100px);
+  aspect-ratio: 88 / 107;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s ease;
+  will-change: transform, opacity;
+  display: flex;
+  flex-direction: column;
+}
+
+.overview-polaroid:hover {
+  transform: rotate(0deg) scale(1.15) translateY(-4px) !important;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.8), 0 0 18px rgba(242, 184, 7, 0.5);
+  z-index: 10;
+}
+
+.overview-photo-frame {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #111;
+  overflow: hidden;
+  border-radius: 1px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.overview-polaroid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.classic-year {
+  display: block;
+  font-family: 'Caveat', cursive, monospace;
+  font-weight: 700;
+  font-size: clamp(0.75rem, 0.9vw, 1rem);
+  color: #1a1714;
+  padding-top: 0.2rem;
+  line-height: 1;
+  text-align: center;
+}
+
+.classic-caption {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-weight: 600;
+  font-size: 0.52rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6a6256;
+  line-height: 1.35;
+  margin-top: 2px;
+  text-align: center;
+  /* 2 líneas: el caption largo (EPICENTRO BOHEMIO) parte en dos en vez de
+     truncarse con ellipsis */
+  min-height: calc(0.52rem * 1.35 * 2);
+}
+
+.overview-note {
+  opacity: 0.7;
+  font-size: 0.88rem;
+  color: #fff;
+  margin-top: 0.5rem;
+}
+
+/* Transición de separación entre overview e hitos */
+.gap-stage {
+  height: 100vh;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.35;
+  color: var(--accent);
+}
+
+#track-nodes {
+  display: flex;
+  height: 100vh;
+  position: relative;
+}
+
+/* ==========================================================================
+   5. Hito de Época (180vw: Timeline -> Expansión Túnel -> Des-expansión)
+   ========================================================================== */
+.timeline-item {
+  width: 180vw;
+  height: 100vh;
+  position: relative;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.stage-frame {
+  position: absolute;
+  left: calc(50% - 50vw);
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.timeline-item:nth-child(even) .info-card { margin-left: auto; margin-right: 6vw; }
+.timeline-item:nth-child(odd) .info-card { margin-right: auto; margin-left: 6vw; }
+
+/* --------------------------------------------------------------------------
+   Polaroid SX-70 Auténtica sobre el Rail
+   -------------------------------------------------------------------------- */
+.snapshot {
+  position: absolute;
+  left: 50%;
+  top: var(--rail-top);
+  /* La columna reposa SOBRE el riel: polaroid arriba, tick vertical y dot
+     centrado en la línea (polaroid | °——). El offset 50px ≈ mitad del dot
+     (7) + margen (8) + pill de etiqueta (~29) + 4 de calce fino */
+  transform: translate(-50%, calc(-100% + 50px));
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  will-change: transform, opacity;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.snapshot-anchor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Debajo de la polaroid: el tick baja desde la foto hasta el nodo */
+  order: 2;
+}
+
+.snapshot-tick {
+  width: 2px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.snapshot-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #0d0d0d;
+  box-shadow: 0 0 10px rgba(242, 184, 7, 0.6);
+  order: 2;
+}
+
+.is-active .snapshot-dot {
+  background: var(--color-red, #E02828);
+  box-shadow: 0 0 0 2px var(--color-red, #E02828), 0 0 22px rgb(224 40 40 / 0.65);
+}
+
+/* Tarjeta Polaroid SX-70 con marco blanco auténtico */
+.polaroid-card {
+  order: 1;
+  width: clamp(150px, 15vw, 195px);
+  aspect-ratio: 88 / 107;
+  background: linear-gradient(172deg, #ffffff 0%, #f7f4ee 80%, #eee9de 100%);
+  color: #111;
+  padding: 8px 8px 30px 8px; /* Proporción SX-70: borde inferior ancho */
+  border-radius: 2px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 4px 10px rgba(0, 0, 0, 0.4);
+  transform: rotate(-3.5deg);
+  will-change: transform, opacity;
+  transform-origin: center 44%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.polaroid-photo-frame {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #111;
+  overflow: hidden;
+  border-radius: 1px;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.polaroid-photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.polaroid-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, transparent 45%);
+}
+
+.polaroid-chin {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 6px;
+}
+
+.polaroid-chin .year-text {
+  font-family: 'Caveat', cursive, monospace;
+  font-weight: 700;
+  font-size: clamp(1.2rem, 1.45vw, 1.55rem);
+  color: #1a1714;
+  line-height: 1;
+}
+
+.polaroid-chin .label-text {
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6a6256;
+  margin-top: 2px;
+}
+
+/* Etiqueta del hito: pill crema bajo la polaroid (posición original — la
+   polaroid no se desplaza) */
+.snapshot-label {
+  order: 3;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  background: var(--color-cream, #FDF6E3);
+  border: 1px solid rgb(18 18 18 / 0.08);
+  box-shadow: var(--shadow-soft, 0 8px 20px -6px rgb(18 18 18 / 0.25));
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  margin-top: 8px;
+  color: var(--color-ink, #121212);
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Info Card sutil (v2: crema, sombra difuminada, lateral compacta)
+   -------------------------------------------------------------------------- */
+/* Card de fullview fija al viewport: reutiliza la piel .info-card pero sin
+   heredar el desplazamiento del track/stage-frame. Lado alterno por era
+   (is-right en hitos impares, igual que el nth-child original). El engine
+   maneja opacity/transform inline desde el scrub del túnel. */
+#fullview-card {
+  position: fixed;
+  top: 50%;
+  left: 6vw;
+  right: auto;
+  transform: translateY(-50%);
+  margin: 0;
+  z-index: 18;
+}
+
+#fullview-card.is-right {
+  left: auto;
+  right: 6vw;
+}
+.info-card {
+  position: relative;
+  z-index: 30;
+  width: min(330px, 80vw);
+  max-width: 330px;
+  /* Antitruncado: en pantallas bajas la card scrollea en vez de cortarse
+     contra el overflow hidden del wrapper */
+  max-height: min(64vh, 560px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  margin: 0 6vw;
+  margin-bottom: 10vh;
+  padding: 1.25rem 1.35rem 1.35rem;
+  background: var(--color-cream, #FDF6E3);
+  border-radius: var(--radius-sticker, 18px);
+  box-shadow: var(--shadow-soft-lg, 0 14px 32px -8px rgb(18 18 18 / 0.28));
+  opacity: 0;
+  transform: translateY(24px);
+  will-change: transform, opacity;
+  pointer-events: auto;
+  color: var(--color-ink, #121212);
+  border: 1px solid rgb(18 18 18 / 0.08);
+}
+
+.card-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.6rem;
+}
+
+.card-badge-year {
+  background: var(--color-red, #E02828);
+  color: #fff;
+  font-family: var(--font-display, 'Bebas Neue', Impact, sans-serif);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0.35rem 0.7rem 0.2rem;
+  border-radius: var(--radius-badge, 10px);
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.card-chip-cat {
+  background: color-mix(in srgb, var(--color-verde, #1E8C86) 12%, transparent);
+  color: var(--color-verde-dark, #0F5F5A);
+  font-family: var(--font-body, 'Work Sans', 'Inter', sans-serif);
+  font-size: 0.7rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.info-card h2 {
+  margin: 0.15rem 0 0.5rem;
+  font-family: var(--font-display, 'Bebas Neue', Impact, sans-serif);
+  font-size: clamp(1.25rem, 1.9vw, 1.6rem);
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-ink, #121212);
+}
+
+.info-card p {
+  font-family: var(--font-body, 'Work Sans', 'Inter', sans-serif);
+  opacity: 0.88;
+  line-height: 1.55;
+  font-size: 0.9rem;
+  margin: 0;
+  color: var(--color-ink, #121212);
+}
+
+.info-card .hint {
+  display: inline-block;
+  margin-top: 0.7rem;
+  font-size: 0.78rem;
+  color: var(--color-verde-dark, #0F5F5A);
+  font-weight: 600;
+  font-family: var(--font-body, 'Work Sans', sans-serif);
+}
+
+/* ==========================================================================
+   6. Progreso Inferior + Dots Navegables
+   ========================================================================== */
+#progress {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 24px;
+  z-index: 40;
+  width: min(540px, 84vw);
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#progress.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#progress-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+  position: relative;
+}
+
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--color-red, #E02828);
+  box-shadow: 0 0 10px rgb(224 40 40 / 0.55);
+  border-radius: 3px;
+  transition: width 0.25s ease;
+}
+
+.progress-node {
+  display: none;
+}
+
+.progress-node.active {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  transform: translate(-50%, -50%) scale(1.35);
+}
+
+#dots {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  opacity: 0.85;
+  color: #fff;
+}
+
+#dots button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.55;
+  font: inherit;
+  padding: 2px 4px;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+#dots button.active {
+  opacity: 1;
+  color: var(--color-red, #E02828);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   7. Responsive & Prefers Reduced Motion
+   ========================================================================== */
+@media (max-height: 720px) {
+  .info-card {
+    margin-bottom: 8vh;
+    padding: 1rem 1.1rem 1.1rem;
+  }
+  .info-card p { font-size: 0.84rem; }
+  .info-card h2 { font-size: 1.15rem; }
+}
+
+@media (max-width: 768px) {
+  .timeline-module-root { --rail-top: 78%; }
+  .classic-timeline { width: 96vw; padding: 0 0.25rem; }
+  .classic-node { min-height: 44vh; }
+  .classic-caption { display: none; }
+  .overview-polaroid { width: 14vw; padding: 4px 4px 10px 4px; }
+  .info-card { max-width: min(78vw, 300px); margin: 0 1rem !important; margin-bottom: 22vh; padding: 1rem 1.1rem 1.1rem; }
+  .polaroid-card { width: 130px; padding: 6px 6px 22px 6px; }
+  .snapshot-tick { height: 36px; }
+  .snapshot-label { font-size: 0.62rem; }
+  #fullview-card { left: 1rem; right: auto; margin: 0 !important; }
+  #fullview-card.is-right { left: auto; right: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .polaroid-card { transform: rotate(0deg); }
+  .overview-polaroid { transform: rotate(0deg); }
+}
