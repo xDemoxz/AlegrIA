@@ -74,7 +74,7 @@
 
 - **Hito:** Reconversión del histórico Edificio Coltabaco en un campus moderno enfocado en la formación tecnológica, programación e innovación digital para el talento local.
 
-![2025 — Campus RIWI](../../../public/assets/timeline/riwi-baq.png)
+![2025 — Campus RIWI](../../../public/assets/timeline/riwi-baq.jpg)
 
 ---
 
