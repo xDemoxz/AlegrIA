@@ -16,12 +16,17 @@ import { AR_PIECES } from './arPieces';
  * Así el runtime de Zappar (cámara + WebAssembly) no se carga en el home
  * ni compite con el WebGL del Módulo 2.
  */
-export default function Module4AR() {
+export default function Module4AR({ onBack } = {}) {
   const navigate = useNavigate();
   const handleLaunch = useCallback(() => navigate('/ra'), [navigate]);
 
   return (
     <section className="max-w-[1240px] mx-auto px-6 pt-12 pb-16">
+      {onBack && (
+        <PopButton variant="primary" className="!text-lg mb-5" onClick={onBack}>
+          ‹ VOLVER
+        </PopButton>
+      )}
       <div className="relative overflow-hidden rounded-sticker bg-ink text-cream shadow-soft-lg">
         <div aria-hidden="true" className="absolute inset-x-0 top-0 h-3 bg-baldosa" />
 

@@ -33,7 +33,8 @@ const IFRAME_ALLOW = [
 
 export default function RAExperiencePage() {
   const navigate = useNavigate();
-  const handleExit = useCallback(() => navigate('/'), [navigate]);
+  // Vuelve al teaser (/ar), de donde se entra; desde ahí ya se llega al home.
+  const handleExit = useCallback(() => navigate('/ar'), [navigate]);
   const [loaded, setLoaded] = useState(false);
 
   // Bloquear el scroll del documento mientras la experiencia está abierta.
@@ -75,10 +76,11 @@ export default function RAExperiencePage() {
         type="button"
         onClick={handleExit}
         aria-label="Salir del recorrido AR"
-        className="absolute left-3 flex h-11 w-11 items-center justify-center rounded-pill bg-cream text-xl text-verde-dark shadow-soft transition-all duration-200 ease-pop hover:-translate-y-0.5 hover:shadow-soft-lg active:translate-y-0 active:shadow-pressed"
+        className="absolute left-3 flex h-11 items-center justify-center gap-1.5 rounded-pill bg-cream px-4 font-display text-lg leading-none tracking-wide text-verde-dark shadow-soft transition-all duration-200 ease-pop hover:-translate-y-0.5 hover:shadow-soft-lg active:translate-y-0 active:shadow-pressed"
         style={{ top: 'max(12px, env(safe-area-inset-top))' }}
       >
-        ✕
+        <span aria-hidden="true" className="text-xl">‹</span>
+        VOLVER
       </button>
       {AR_URL && (
         <a
