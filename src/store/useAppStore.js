@@ -5,18 +5,14 @@ import { create } from 'zustand';
  * Cada compañero conmuta a su módulo llamando a goTo(...) — nadie necesita
  * tocar este archivo para trabajar dentro de su módulo.
  */
-/**
- * MOD2_FUTURE ya no es una sección propia del switcher: su teaser vive
- * apilado dentro de MOD1_TIMELINE (ver src/modules/home) y la experiencia
- * 3D completa corre en la ruta standalone /futuro (fuera de este store).
- */
 export const SECTION = {
   MOD1_TIMELINE: 'MOD1_TIMELINE',
+  MOD2_FUTURE: 'MOD2_FUTURE',
   MOD3_POSTER: 'MOD3_POSTER',
   MOD4_AR: 'MOD4_AR',
 };
 
-const ORDER = [SECTION.MOD1_TIMELINE, SECTION.MOD3_POSTER, SECTION.MOD4_AR];
+const ORDER = [SECTION.MOD1_TIMELINE, SECTION.MOD2_FUTURE, SECTION.MOD3_POSTER, SECTION.MOD4_AR];
 
 export const useAppStore = create((set, get) => ({
   /** Módulo activo actualmente renderizado por <App /> */

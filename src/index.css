@@ -1,8 +1,6 @@
-/* Punto de entrada de estilos — Tailwind v4 CSS-first.
- * Los tokens reales (colores, tipografía, radios, sombras, utilidades de
- * marca) viven en ./styles/theme.v4.css, que hace @import "tailwindcss"
- * y define el bloque @theme. No hay tailwind.config.js ni postcss.config.js. */
-@import './styles/theme.v4.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @layer base {
   body {
@@ -11,14 +9,22 @@
   }
 
   a {
-    @apply text-verde-dark underline underline-offset-[3px];
+    @apply text-blue-dark underline underline-offset-[3px];
   }
   a:hover {
     @apply text-red;
   }
 
   ::selection {
-    @apply bg-verde text-white;
+    @apply bg-red text-white;
+  }
+}
+
+@layer utilities {
+  /* Textura punteada de fondo usada bajo el header/hero (ver HeaderBanner) */
+  .bg-dot-grid {
+    background-image: radial-gradient(#121212 1.5px, transparent 1.5px);
+    background-size: 18px 18px;
   }
 }
 
@@ -28,15 +34,5 @@
   }
   to {
     transform: translateX(-50%);
-  }
-}
-
-/* Cross-fade del fondo del cartel (Módulo 3) al cambiar la estampita activa */
-@keyframes bg-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
