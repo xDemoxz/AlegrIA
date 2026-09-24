@@ -7,7 +7,7 @@ export default function AudioToggle({ playing = false, onToggle }) {
     <button
       type="button"
       onClick={onToggle}
-      className="cursor-pointer ml-auto bg-ink text-yellow font-display text-lg tracking-wide leading-none px-5 pt-2.5 pb-2 rounded-pill hover:bg-red hover:text-white transition-colors"
+      className="cursor-pointer ml-auto bg-ink text-yellow font-display text-lg tracking-wide px-4 pt-2.5 pb-1.5 rounded-pill hover:bg-red hover:text-white transition-colors"
     >
       {playing ? '⏸ PAUSAR' : '▶ OÍR'}
     </button>

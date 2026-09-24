@@ -1,25 +1,17 @@
-import TimelineBadge from "../controls/TimelineBadge"
+import TimelineBadge from '../controls/TimelineBadge';
 
 /**
  * TimelineRail — fila de TimelineBadge + texto del hito activo (Módulo 1).
  * Sebastián: este componente es el "aside" descrito en el brief; puedes
  * envolverlo o extenderlo, pero la lógica de scroll/GSAP va en tu módulo,
  * no aquí.
- *
- * v2: sin contorno negro — sombra difuminada grande, coherente con el
- * resto de tarjetas del sistema.
  */
-export default function TimelineRail({
-  hitos,
-  activeYear,
-  onSelect,
-  accent = "#E02828"
-}) {
-  const active = hitos.find((h) => h.year === activeYear) ?? hitos[0]
+export default function TimelineRail({ hitos, activeYear, onSelect, accent = '#E02828' }) {
+  const active = hitos.find((h) => h.year === activeYear) ?? hitos[0];
 
   return (
-    <div className="bg-cream rounded-sticker shadow-soft-lg p-7">
-      <div className="flex flex-wrap gap-5">
+    <div className="bg-cream border-3 border-ink rounded-sticker shadow-pop-black p-6.5">
+      <div className="flex flex-wrap gap-4.5">
         {hitos.map((h) => (
           <TimelineBadge
             key={h.id}
@@ -32,12 +24,10 @@ export default function TimelineRail({
       </div>
       {active && (
         <div className="mt-5.5 bg-ink text-cream rounded-xl px-4.5 py-4 text-[17px] font-medium leading-[1.5]">
-          <span className="font-display text-2xl text-yellow tracking-wide">
-            {active.year} ·{" "}
-          </span>
+          <span className="font-display text-2xl text-yellow tracking-wide">{active.year} · </span>
           {active.text}
         </div>
       )}
     </div>
-  )
+  );
 }
