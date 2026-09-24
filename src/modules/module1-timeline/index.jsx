@@ -1,17 +1,41 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { IoVolumeHigh, IoVolumeMute } from 'react-icons/io5';
 import { timelineHitos } from '../../data/timelineHitos';
 import { initTimelineExperience } from './engine';
+import { createTimelineAudio } from './timelineAudio';
 import './Timeline.css';
 
 export default function Module1Timeline() {
   const containerRef = useRef(null);
+  const audioControllerRef = useRef(null);
+  const [audioState, setAudioState] = useState({ isPlaying: false, isMuted: false, isActive: false });
+
+  // Ciclo de vida del audio acotado al Módulo 1:
+  // Al desmontar (p. ej. navegar a /poster o /ar), el audio se detiene y destruye de inmediato.
+  useEffect(() => {
+    const controller = createTimelineAudio();
+    audioControllerRef.current = controller;
+    const unsub = controller.subscribe(setAudioState);
+
+    return () => {
+      unsub();
+      controller.dispose();
+      audioControllerRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     const root = containerRef.current;
     if (!root) return;
 
+    const engineOptions = {
+      onActiveChange: (active) => {
+        audioControllerRef.current?.setActive(active);
+      },
+    };
+
     // Boot (re-ejecutable): monta la experiencia sobre geometría fresca.
-    let cleanup = initTimelineExperience(root, timelineHitos);
+    let cleanup = initTimelineExperience(root, timelineHitos, engineOptions);
 
     // Curación de geometría: si el viewport o el layout cambiaron desde el
     // boot (nacimiento de pestaña, settle de ventana, resize sin evento
@@ -27,7 +51,7 @@ export default function Module1Timeline() {
       if (!drifted) return false;
       const p = cleanup?.getST?.()?.progress ?? 0;
       cleanup?.();
-      cleanup = initTimelineExperience(root, timelineHitos);
+      cleanup = initTimelineExperience(root, timelineHitos, engineOptions);
       geomBoot = cleanup?.getGeom?.() ?? geomNow();
       const nst = cleanup?.getST?.();
       if (nst) window.scrollTo(0, nst.start + (nst.end - nst.start) * p);
@@ -44,7 +68,7 @@ export default function Module1Timeline() {
       const st = cleanup?.getST?.();
       const p = st ? st.progress : 0;
       cleanup?.();
-      cleanup = initTimelineExperience(root, timelineHitos);
+      cleanup = initTimelineExperience(root, timelineHitos, engineOptions);
       const nst = cleanup?.getST?.();
       if (nst) window.scrollTo(0, nst.start + (nst.end - nst.start) * p);
     }, 2500);
@@ -79,11 +103,26 @@ export default function Module1Timeline() {
       <div id="speed" aria-hidden="true" />
       <div id="grain" aria-hidden="true" />
 
-      {/* 2. HUD Superior (solo contador + año en fullview; el titular vive
-          en el overview inicial) */}
-      <header id="hud" aria-hidden="true">
+      {/* 2. HUD Superior (contador + año en fullview y botón de música) */}
+      <header id="hud">
         <div className="hud-right">
-          <span id="hud-year">Línea</span>
+          <button
+            type="button"
+            className="hud-audio-btn pointer-events-auto"
+            onClick={() => audioControllerRef.current?.toggleMute()}
+            title={audioState.isMuted ? 'Activar música' : 'Silenciar música'}
+            aria-label={audioState.isMuted ? 'Activar música de fondo' : 'Silenciar música de fondo'}
+          >
+            {audioState.isMuted ? (
+              <IoVolumeMute className="hud-audio-icon text-white/70" />
+            ) : (
+              <IoVolumeHigh className="hud-audio-icon text-yellow" />
+            )}
+            <span className="hud-audio-label">
+              {audioState.isMuted ? 'Mudo' : 'Música'}
+            </span>
+          </button>
+          <span id="hud-year" aria-hidden="true">Línea</span>
         </div>
       </header>
 

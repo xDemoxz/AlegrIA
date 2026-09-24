@@ -5,7 +5,7 @@ import { vertexShader, fragmentShader } from './shaders.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function initTimelineExperience(rootEl, ERAS) {
+export function initTimelineExperience(rootEl, ERAS, options = {}) {
   // Idempotencia: si ya había una instancia viva (HMR, StrictMode, re-init
   // por resize), desmontarla primero para no duplicar triggers/tweens.
   if (rootEl._tlCleanup) {
@@ -610,6 +610,9 @@ export function initTimelineExperience(rootEl, ERAS) {
         delay: 0.12,
         ease: 'power2.out',
       },
+      onToggle: (self) => {
+        options.onActiveChange?.(self.isActive);
+      },
       onUpdate: (self) => {
         const p = self.progress;
 
@@ -687,6 +690,10 @@ export function initTimelineExperience(rootEl, ERAS) {
       },
     },
   });
+
+  if (scrollTween?.scrollTrigger) {
+    options.onActiveChange?.(scrollTween.scrollTrigger.isActive);
+  }
 
   setActive(-1);
 
