@@ -1,30 +1,61 @@
+import { useState } from 'react';
 import { STICKERS } from './data/stickers';
 import { BACKGROUNDS } from './data/backgrounds';
 import PosterSticker from './PosterSticker';
 import PosterBackground from './PosterBackground';
 import PopButton from '../../components/controls/PopButton';
 
-/** Badge circular "?" con tooltip nativo — misma idea del mockup.
+/** Badge circular "?" — misma idea del mockup. En táctil no hay tooltip
+ * nativo, así que tocarlo despliega la ayuda debajo del paso.
  * v2: sin contorno negro, sombra difuminada + pequeño rebote en hover. */
-function HelpBadge({ hint }) {
+function HelpBadge({ hint, open, onToggle }) {
   return (
-    <span
+    <button
+      type="button"
       title={hint}
-      className="shrink-0 w-6 h-6 rounded-pill bg-orange text-white shadow-soft flex items-center justify-center text-xs font-bold cursor-help transition-transform duration-150 ease-pop hover:scale-110"
+      aria-label="Ayuda"
+      aria-expanded={open}
+      onClick={onToggle}
+      className="shrink-0 w-7 h-7 md:w-6 md:h-6 rounded-pill bg-orange text-white shadow-soft flex items-center justify-center text-xs font-bold cursor-help transition-transform duration-150 ease-pop hover:scale-110"
     >
       ?
-    </span>
+    </button>
   );
 }
 
+function Step({ label, htmlFor, hint, children }) {
+  const [open, setOpen] = useState(false);
+  const Label = htmlFor ? 'label' : 'span';
+  return (
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-center gap-2.5">
+        <Label className="font-display text-lg tracking-wide" htmlFor={htmlFor}>
+          {label}
+        </Label>
+        <HelpBadge hint={hint} open={open} onToggle={() => setOpen((o) => !o)} />
+      </div>
+      {open && <p className="m-0 -mt-1 text-sm text-ink/75">{hint}</p>}
+      {children}
+    </div>
+  );
+}
+
+/** Tira con scroll horizontal en móvil; grilla en escritorio. */
+const STRIP =
+  'flex gap-2.5 overflow-x-auto overscroll-x-contain -mx-5 px-5 pt-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:px-0 md:overflow-visible md:grid';
+
+const inputClass =
+  'flex-1 min-w-0 font-body text-base px-4 py-2.5 bg-white rounded-xl outline-none text-ink shadow-[inset_0_2px_4px_rgba(18,18,18,0.12)] focus:shadow-[inset_0_2px_4px_rgba(18,18,18,0.12),0_0_0_3px_#3CBAB3] transition-shadow duration-150';
+
 /**
- * PosterForm — panel izquierdo: nombre, galería de estampitas (arrastrables)
- * y texto del cartel. La lógica de arrastre vive en el módulo padre
- * (index.jsx) vía onStickerDragStart, para poder soltar sobre el canvas del
- * panel derecho.
+ * PosterForm — nombre, galería de fondos y estampitas (tocar o arrastrar) y
+ * texto del cartel. La lógica de arrastre vive en el módulo padre
+ * (index.jsx) vía onStickerDragStart/onBgDragStart, para poder soltar sobre
+ * el canvas.
  *
  * v2: inputs sin borde de color — se delimitan con sombra interior (como
- * SearchInput) y anillo teal al enfocar.
+ * SearchInput) y anillo teal al enfocar. (text-base = 16px: por debajo de
+ * eso iOS hace zoom al enfocar.)
  */
 export default function PosterForm({
   title,
@@ -33,94 +64,81 @@ export default function PosterForm({
   onTextChange,
   onStickerDragStart,
   onBgDragStart,
+  onSelectVariant,
   onBack,
   onReset,
   activeBackgroundId,
   stickerVariants,
 }) {
   return (
-    <div className="bg-cream h-full overflow-y-auto p-8 flex flex-col gap-7">
+    <div className="bg-cream p-5 pb-8 md:h-full md:overflow-y-auto md:p-8 flex flex-col gap-6 md:gap-7">
       <h1 className="font-display text-3xl tracking-wide text-red m-0">CREA TU CARTEL</h1>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2.5">
-          <label className="font-display text-lg tracking-wide" htmlFor="poster-title">
-            1. Nombre de tu cartel
-          </label>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <input
-            id="poster-title"
-            type="text"
-            value={title}
-            onChange={(e) => onTitleChange(e.target.value)}
-            placeholder="Tu nombre o el de alguien especial"
-            maxLength={40}
-            className="flex-1 font-body text-base px-4 py-2.5 bg-white rounded-xl outline-none text-ink shadow-[inset_0_2px_4px_rgba(18,18,18,0.12)] focus:shadow-[inset_0_2px_4px_rgba(18,18,18,0.12),0_0_0_3px_#3CBAB3] transition-shadow duration-150"
-          />
-          <HelpBadge hint="Aparecerá como título grande en tu cartel." />
-        </div>
-      </div>
+      <Step label="1. Nombre de tu cartel" htmlFor="poster-title" hint="Aparecerá como título grande en tu cartel.">
+        <input
+          id="poster-title"
+          type="text"
+          value={title}
+          onChange={(e) => onTitleChange(e.target.value)}
+          placeholder="Tu nombre o el de alguien especial"
+          maxLength={40}
+          enterKeyHint="done"
+          className={inputClass}
+        />
+      </Step>
 
-      <div className="flex flex-col gap-2.5">
-        <div className="flex items-center gap-2.5">
-          <span className="font-display text-lg tracking-wide">2. Arrastra un fondo al cartel</span>
-          <HelpBadge hint="Suelta uno sobre el cartel a la derecha. Puedes cambiarlo las veces que quieras: las estampitas que ya pusiste se quedan donde están." />
-        </div>
-        <div className="grid grid-cols-5 gap-2.5">
+      <Step
+        label="2. Elige un fondo"
+        hint="Tócalo o arrástralo al cartel. Puedes cambiarlo las veces que quieras: las estampitas que ya pusiste se quedan donde están."
+      >
+        <div className={`${STRIP} md:grid-cols-5`} data-testid="bg-gallery">
           {BACKGROUNDS.map((bg) => (
-            <PosterBackground
-              key={bg.id}
-              bg={bg}
-              active={activeBackgroundId === bg.id}
-              onDragStart={onBgDragStart}
-            />
+            <div key={bg.id} className="w-18 shrink-0 md:w-auto">
+              <PosterBackground bg={bg} active={activeBackgroundId === bg.id} onDragStart={onBgDragStart} />
+            </div>
           ))}
         </div>
-      </div>
+      </Step>
 
-      <div className="flex flex-col gap-2.5">
-        <div className="flex items-center gap-2.5">
-          <span className="font-display text-lg tracking-wide">3. Pon estampitas encima</span>
-          <HelpBadge hint="Arrastra las que quieras sobre el cartel (puedes repetirlas). Luego muévelas arrastrándolas, y toca una para agrandarla, achicarla o quitarla." />
-        </div>
-        <div className="grid grid-cols-4 gap-3">
+      <Step
+        label="3. Pon estampitas encima"
+        hint="Tócalas o arrástralas al cartel (puedes repetirlas). Luego muévelas con el dedo, y toca una para agrandarla, achicarla o quitarla. Los puntos de color cambian su color."
+      >
+        <div className={`${STRIP} md:grid-cols-4 md:gap-3`} data-testid="sticker-gallery">
           {STICKERS.map((s) => (
-            <PosterSticker
-              key={s.id}
-              sticker={s}
-              onDragStart={onStickerDragStart}
-              selectedVariant={stickerVariants[s.id]}
-            />
+            <div key={s.id} className="w-21 shrink-0 md:w-auto">
+              <PosterSticker
+                sticker={s}
+                onDragStart={onStickerDragStart}
+                onSelectVariant={onSelectVariant}
+                selectedVariant={stickerVariants[s.id]}
+              />
+            </div>
           ))}
         </div>
-      </div>
+      </Step>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2.5">
-          <label className="font-display text-lg tracking-wide" htmlFor="poster-text">
-            4. Escribe el texto que llevará tu cartel
-          </label>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <textarea
-            id="poster-text"
-            value={text}
-            onChange={(e) => onTextChange(e.target.value)}
-            placeholder="Una frase corta para tu cartel"
-            maxLength={80}
-            rows={2}
-            className="flex-1 font-body text-base px-4 py-2.5 bg-white rounded-xl outline-none resize-none text-ink shadow-[inset_0_2px_4px_rgba(18,18,18,0.12)] focus:shadow-[inset_0_2px_4px_rgba(18,18,18,0.12),0_0_0_3px_#3CBAB3] transition-shadow duration-150"
-          />
-          <HelpBadge hint="Máximo 80 caracteres. Se mostrará debajo del título." />
-        </div>
-      </div>
+      <Step
+        label="4. Escribe el texto de tu cartel"
+        htmlFor="poster-text"
+        hint="Máximo 80 caracteres. Se mostrará debajo del título."
+      >
+        <textarea
+          id="poster-text"
+          value={text}
+          onChange={(e) => onTextChange(e.target.value)}
+          placeholder="Una frase corta para tu cartel"
+          maxLength={80}
+          rows={2}
+          className={`${inputClass} resize-none`}
+        />
+      </Step>
 
-      <div className="flex items-center gap-3 mt-1">
-        <PopButton variant="primary" className="!text-lg self-start" onClick={onBack}>
+      <div className="flex flex-wrap items-center gap-3 mt-1">
+        <PopButton variant="primary" className="!text-lg" onClick={onBack}>
           ‹ ATRÁS
         </PopButton>
-        <PopButton variant="ghost" className="!text-base self-start" onClick={onReset}>
+        <PopButton variant="ghost" className="!text-base" onClick={onReset}>
           ↺ Empezar de nuevo
         </PopButton>
       </div>

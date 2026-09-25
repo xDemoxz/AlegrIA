@@ -3,10 +3,14 @@ import { useAppStore } from '../../store/useAppStore';
 import { usePosterState } from './usePosterState';
 import PosterForm from './PosterForm';
 import PosterPreview from './PosterPreview';
+import PosterResultSheet from './PosterResultSheet';
 import Toast from '../../components/feedback/Toast';
-import { exportPosterToPng } from './exportPoster';
+import { renderPosterToBlob, savePosterBlob, downloadBlob, sanitizeFilename, isTouchDevice } from './exportPoster';
 import { STICKERS } from './data/stickers';
 import { BACKGROUNDS } from './data/backgrounds';
+
+/** Px que hay que mover el dedo/mouse para que un toque cuente como arrastre. */
+export const DRAG_THRESHOLD_PX = 8;
 
 /**
  * MÓDULO 3 — Generador de Pósters / Murales (José Romero)
@@ -17,10 +21,15 @@ import { BACKGROUNDS } from './data/backgrounds';
  *  - Galería → cartel: un fondo reemplaza al anterior (sin tocar las
  *    estampitas); una estampita se AGREGA en el punto soltado (puedes poner
  *    varias, repetidas).
+ *  - TOCAR (sin arrastrar) un fondo lo aplica; tocar una estampita la agrega
+ *    cerca del centro. Es el camino principal en móvil, donde galería y
+ *    cartel no siempre caben juntos en pantalla.
  *  - Estampita ya colocada: se arrastra para moverla, y al tocarla salen
  *    los controles −/+/✕ (ver PosterPreview).
- * El orden recomendado en la UI es fondo primero (2), luego estampitas (3),
- * pero se puede cambiar el fondo en cualquier momento.
+ *
+ * Móvil (< md): cartel arriba (sticky) y formulario debajo; las galerías son
+ * tiras con scroll horizontal (touch-action: pan-x), así un gesto lateral
+ * desplaza la tira y uno hacia arriba arrastra al cartel.
  */
 export default function Module3Poster({ onBack: onBackProp } = {}) {
   const prev = useAppStore((s) => s.prev);
@@ -51,6 +60,7 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
   const canvasRef = useRef(null);
   const [dragState, setDragState] = useState(null); // { type:'sticker'|'bg', id, x, y, variantIndex? } | null
   const [saving, setSaving] = useState(false);
+  const [result, setResult] = useState(null); // { blob, filename } — hoja de guardado en móvil
   const [toast, setToast] = useState(null);
 
   // Los listeners globales viven fuera del render: leen estado vía refs.
@@ -61,7 +71,7 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
 
   const toCanvasPct = useCallback((clientX, clientY) => {
     const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return null;
+    if (!rect || !rect.width || !rect.height) return null;
     return {
       inside: clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom,
       xPct: ((clientX - rect.left) / rect.width) * 100,
@@ -69,49 +79,77 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
     };
   }, []);
 
-  // Drag desde la galería (estampita o fondo) hacia el cartel.
-  const attachGalleryDrag = useCallback(
-    (initial) => {
-      function handleMove(e) {
-        setDragState((s) => (s ? { ...s, x: e.clientX, y: e.clientY } : s));
+  const applyGalleryItem = useCallback(
+    (item, xPct, yPct) => {
+      if (item.type === 'bg') {
+        setBackgroundFromBg(item.id);
+        return;
       }
+      const variantIndex = item.variantIndex ?? variantsRef.current[item.id] ?? 0;
+      if (xPct === undefined) {
+        // Por toque: cerca del centro, corriendo un poco cada nueva para que
+        // no queden todas apiladas en el mismo punto.
+        const n = placedRef.current.length;
+        xPct = 50 + ((n % 5) - 2) * 7;
+        yPct = 58 + ((Math.floor(n / 5) % 3) - 1) * 10;
+      }
+      addSticker(item.id, variantIndex, xPct, yPct);
+    },
+    [setBackgroundFromBg, addSticker]
+  );
 
-      function handleUp(e) {
-        const pos = toCanvasPct(e.clientX, e.clientY);
-        if (pos?.inside) {
-          if (initial.type === 'bg') {
-            setBackgroundFromBg(initial.id);
-          } else {
-            const variantIndex = initial.variantIndex ?? variantsRef.current[initial.id] ?? 0;
-            addSticker(initial.id, variantIndex, pos.xPct, pos.yPct);
-          }
-        }
+  // Arrastre (o toque) desde la galería (estampita o fondo) hacia el cartel.
+  const startGalleryGesture = useCallback(
+    (item, startX, startY) => {
+      let moved = false;
+
+      function cleanup() {
         setDragState(null);
         window.removeEventListener('pointermove', handleMove);
         window.removeEventListener('pointerup', handleUp);
+        window.removeEventListener('pointercancel', handleCancel);
+      }
+
+      function handleMove(e) {
+        if (!moved && Math.hypot(e.clientX - startX, e.clientY - startY) < DRAG_THRESHOLD_PX) return;
+        moved = true;
+        setDragState({ ...item, x: e.clientX, y: e.clientY });
+      }
+
+      function handleUp(e) {
+        cleanup();
+        if (!moved) {
+          applyGalleryItem(item);
+          return;
+        }
+        const pos = toCanvasPct(e.clientX, e.clientY);
+        if (pos?.inside) applyGalleryItem(item, pos.xPct, pos.yPct);
+      }
+
+      // El navegador tomó el gesto (scroll horizontal de la tira): no es
+      // ni toque ni arrastre.
+      function handleCancel() {
+        cleanup();
       }
 
       window.addEventListener('pointermove', handleMove);
       window.addEventListener('pointerup', handleUp);
+      window.addEventListener('pointercancel', handleCancel);
     },
-    [toCanvasPct, setBackgroundFromBg, addSticker]
+    [toCanvasPct, applyGalleryItem]
   );
 
   const onStickerDragStart = useCallback(
     (stickerId, x, y, variantIndex) => {
       if (variantIndex !== undefined) setStickerVariant(stickerId, variantIndex);
-      setDragState({ type: 'sticker', id: stickerId, x, y, variantIndex });
-      attachGalleryDrag({ type: 'sticker', id: stickerId, variantIndex });
+      startGalleryGesture({ type: 'sticker', id: stickerId, variantIndex }, x, y);
     },
-    [attachGalleryDrag, setStickerVariant]
+    [startGalleryGesture, setStickerVariant]
   );
 
   const onBgDragStart = useCallback(
-    (bgId, x, y) => {
-      setDragState({ type: 'bg', id: bgId, x, y });
-      attachGalleryDrag({ type: 'bg', id: bgId });
-    },
-    [attachGalleryDrag]
+    (bgId, x, y) => startGalleryGesture({ type: 'bg', id: bgId }, x, y),
+    [startGalleryGesture]
   );
 
   // Drag de una estampita ya colocada: se mueve en vivo dentro del cartel,
@@ -132,12 +170,19 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
       function handleUp() {
         window.removeEventListener('pointermove', handleMove);
         window.removeEventListener('pointerup', handleUp);
+        window.removeEventListener('pointercancel', handleUp);
       }
       window.addEventListener('pointermove', handleMove);
       window.addEventListener('pointerup', handleUp);
+      window.addEventListener('pointercancel', handleUp);
     },
     [toCanvasPct, bringToFront, moveSticker]
   );
+
+  const reportError = useCallback((err) => {
+    console.error('[Módulo 3] No se pudo exportar el cartel:', err);
+    setToast('No se pudo guardar el cartel — intenta de nuevo');
+  }, []);
 
   const handleSave = useCallback(async () => {
     if (!canvasRef.current) {
@@ -147,22 +192,39 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
     setSelectedUid(null);
     setSaving(true);
     try {
-      await exportPosterToPng(canvasRef.current, `${title || 'cartel'}-alegria.png`);
-      setToast('Cartel guardado ✓');
-    } catch (err) {
-      console.error('[Módulo 3] No se pudo exportar el cartel:', err);
-      const msg = err?.message ?? String(err);
-      if (msg.includes('blob') || msg.includes('toBlob')) {
-        setToast('Error generando la imagen — intenta de nuevo');
-      } else if (msg.includes('html2canvas') || msg.includes('canvas')) {
-        setToast('Error renderizando — revisa la consola (F12)');
+      const blob = await renderPosterToBlob(canvasRef.current);
+      const filename = sanitizeFilename(title);
+      if (isTouchDevice()) {
+        setResult({ blob, filename });
       } else {
-        setToast('No se pudo guardar — revisa la consola (F12)');
+        downloadBlob(blob, filename);
+        setToast('Cartel guardado ✓');
       }
+    } catch (err) {
+      reportError(err);
     } finally {
       setSaving(false);
     }
-  }, [title, setSelectedUid]);
+  }, [title, setSelectedUid, reportError]);
+
+  const handleSaveResult = useCallback(
+    async ({ preferShare }) => {
+      if (!result) return;
+      setSaving(true);
+      try {
+        const outcome = await savePosterBlob(result.blob, result.filename, { preferShare });
+        if (outcome !== 'cancelled') {
+          setToast(outcome === 'shared' ? 'Cartel listo ✓' : 'Cartel guardado ✓');
+          setResult(null);
+        }
+      } catch (err) {
+        reportError(err);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [result, reportError]
+  );
 
   const handleReset = useCallback(() => {
     reset();
@@ -170,7 +232,7 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
   }, [reset]);
 
   return (
-    <section className="grid flex-1" style={{ gridTemplateColumns: 'minmax(320px, 460px) 1fr', minHeight: '80vh' }}>
+    <section className="group/poster flex flex-1 flex-col md:grid md:min-h-[80vh] md:grid-cols-[minmax(320px,460px)_1fr]">
       <PosterForm
         title={title}
         onTitleChange={setTitle}
@@ -178,6 +240,7 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
         onTextChange={setText}
         onStickerDragStart={onStickerDragStart}
         onBgDragStart={onBgDragStart}
+        onSelectVariant={setStickerVariant}
         onBack={onBack}
         onReset={handleReset}
         activeBackgroundId={activeBackgroundId}
@@ -195,7 +258,7 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
         onResizeSticker={resizeSticker}
         onRemoveSticker={removeSticker}
         onSave={handleSave}
-        saving={saving}
+        saving={saving && !result}
       />
 
       {/* Ghost del elemento arrastrado desde la galería (estampita o fondo) */}
@@ -212,6 +275,7 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
             if (!bg) return null;
             return (
               <div
+                data-testid="drag-ghost"
                 className="fixed z-[998] h-24 w-[72px] rounded-sticker pointer-events-none shadow-soft-lg overflow-hidden"
                 style={ghostStyle}
               >
@@ -228,11 +292,12 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
           const variantImg = s?.variants?.[dragState.variantIndex ?? variantsRef.current[dragState.id] ?? 0]?.image ?? s?.image;
           return (
             <div
+              data-testid="drag-ghost"
               className="fixed z-[998] w-20 h-20 rounded-sticker pointer-events-none bg-white shadow-soft-lg overflow-hidden flex items-center justify-center"
               style={ghostStyle}
             >
               {variantImg ? (
-                <img src={variantImg} alt={s.label} className="w-full h-full object-contain p-1.5" />
+                <img src={variantImg} alt="" className="w-full h-full object-contain p-1.5" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center" style={{ background: s?.bg ?? '#1DB3E7' }}>
                   <span className="text-[10px] font-bold text-white px-1 text-center">{s?.label}</span>
@@ -241,6 +306,16 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
             </div>
           );
         })()}
+
+      {result && (
+        <PosterResultSheet
+          blob={result.blob}
+          filename={result.filename}
+          saving={saving}
+          onSave={handleSaveResult}
+          onClose={() => setResult(null)}
+        />
+      )}
 
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
     </section>

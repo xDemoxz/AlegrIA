@@ -1,36 +1,36 @@
-import { useState, useRef, useEffect } from 'react';
 import CaladoPattern from '../../components/motifs/CaladoPattern';
 import TejaPattern from '../../components/motifs/TejaPattern';
 import BaldosaPattern from '../../components/motifs/BaldosaPattern';
 
 const PATTERNS = { calado: CaladoPattern, teja: TejaPattern, baldosa: BaldosaPattern };
 
-function ColorDot({ color, selected, onPointerDown }) {
+/** Punto de color: área táctil de 24px con el punto visible de 16px. */
+function ColorDot({ color, name, selected, onClick }) {
   return (
     <button
       type="button"
-      onPointerDown={onPointerDown}
-      className={`w-4 h-4 rounded-full border-2 transition-all duration-150 ${selected ? 'border-white' : 'border-white/40 hover:border-white'}`}
-      style={{ backgroundColor: color }}
-      aria-label={color}
-    />
+      onClick={onClick}
+      className="flex h-6 w-6 items-center justify-center"
+      aria-label={`Color ${name}`}
+      aria-pressed={selected}
+    >
+      <span
+        className={`block w-4 h-4 rounded-full border-2 transition-all duration-150 ${
+          selected ? 'border-white scale-125 shadow-soft' : 'border-white/40 hover:border-white'
+        }`}
+        style={{ backgroundColor: color }}
+      />
+    </button>
   );
 }
 
 /**
- * PosterSticker — thumbnail de la galería (izquierda). Usa Pointer Events.
- * Si tiene variants, muestra selector de colores debajo del sticker.
+ * PosterSticker — thumbnail de la galería. Usa Pointer Events: arrastrar lo
+ * suelta en el cartel, tocarlo lo agrega cerca del centro (ver index.jsx).
+ * Si tiene variants, los puntos de color debajo eligen con qué color se
+ * agrega (la miniatura muestra el color elegido).
  */
-export default function PosterSticker({ sticker, onDragStart, selectedVariant }) {
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const colorPickerRef = useRef(null);
-
-  useEffect(() => {
-    if (showColorPicker && colorPickerRef.current) {
-      colorPickerRef.current.focus();
-    }
-  }, [showColorPicker]);
-
+export default function PosterSticker({ sticker, onDragStart, onSelectVariant, selectedVariant }) {
   const hasVariants = sticker.variants?.length > 0;
   const effectiveImage = hasVariants
     ? sticker.variants[selectedVariant ?? 0]?.image ?? sticker.image
@@ -38,34 +38,21 @@ export default function PosterSticker({ sticker, onDragStart, selectedVariant })
 
   const Pattern = sticker.pattern ? PATTERNS[sticker.pattern] : null;
 
-  const handleClickOutside = (e) => {
-    if (colorPickerRef.current && !colorPickerRef.current.contains(e.target)) {
-      setShowColorPicker(false);
-    }
-  };
-
-  useEffect(() => {
-    if (showColorPicker) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [showColorPicker]);
-
   return (
     <div>
       <button
         type="button"
         onPointerDown={(e) => onDragStart(sticker.id, e.clientX, e.clientY, selectedVariant)}
-        className="relative w-full aspect-[3/4] rounded-sticker shadow-soft overflow-hidden cursor-grab active:cursor-grabbing touch-none transition-all duration-200 ease-pop hover:-translate-y-1 hover:rotate-1 hover:shadow-soft-lg active:translate-y-0 active:rotate-0 active:shadow-pressed bg-white"
+        className="relative w-full aspect-[3/4] rounded-sticker shadow-soft overflow-hidden cursor-grab active:cursor-grabbing touch-pan-x select-none [-webkit-touch-callout:none] transition-all duration-200 ease-pop hover:-translate-y-1 hover:rotate-1 hover:shadow-soft-lg active:translate-y-0 active:rotate-0 active:shadow-pressed bg-white"
         title={hasVariants ? `${sticker.label} (${sticker.variants.length} colores)` : sticker.label}
-        aria-label={hasVariants ? `Stampella ${sticker.label}, colores disponibles` : `Stampella ${sticker.label}`}
-        onClick={() => hasVariants && setShowColorPicker((s) => !s)}
+        aria-label={`Estampita ${sticker.label}`}
       >
         {effectiveImage ? (
           <img
             src={effectiveImage}
-            alt={sticker.label}
+            alt=""
             loading="lazy"
+            draggable={false}
             className="absolute inset-0 w-full h-full object-contain p-2.5 pointer-events-none"
           />
         ) : (
@@ -73,7 +60,7 @@ export default function PosterSticker({ sticker, onDragStart, selectedVariant })
             <span className="text-[10px] font-bold text-white text-center px-1">{sticker.label}</span>
           </div>
         )}
-        {sticker.pattern && !effectiveImage && <Pattern className="absolute inset-0" opacity={0.3} />}
+        {Pattern && !effectiveImage && <Pattern className="absolute inset-0" opacity={0.3} />}
         <span
           className="absolute bottom-0 left-0 right-0 text-[11px] font-bold leading-tight px-1.5 py-1 text-center backdrop-blur-sm"
           style={{
@@ -82,21 +69,18 @@ export default function PosterSticker({ sticker, onDragStart, selectedVariant })
           }}
         >
           {sticker.label}
-          {hasVariants && selectedVariant !== undefined && ` • ${sticker.variants[selectedVariant]?.name ?? ''}`}
         </span>
       </button>
 
       {hasVariants && (
-        <div ref={colorPickerRef} className="mt-2 flex gap-1.5 justify-center">
+        <div className="mt-1 flex justify-center">
           {sticker.variants.map((v, i) => (
             <ColorDot
               key={i}
               color={v.color || '#F2B807'}
-              selected={selectedVariant === i}
-              onPointerDown={(e) => {
-                e.stopPropagation();
-                onDragStart(sticker.id, e.clientX, e.clientY, i);
-              }}
+              name={v.name}
+              selected={(selectedVariant ?? 0) === i}
+              onClick={() => onSelectVariant(sticker.id, i)}
             />
           ))}
         </div>

@@ -9,13 +9,15 @@ import BaldosaPattern from '../components/motifs/BaldosaPattern';
  * sin switcher por store (el home es composición estática). El botón
  * "volver" del póster regresa al home. GestureCursor se monta aquí porque
  * el drag por Pointer Events + gestureBridge lo necesita en esta página.
+ * overflow-x-clip (no hidden): hidden crea un contenedor de scroll y rompe
+ * el cartel sticky del layout móvil.
  */
 export default function PosterPage() {
   const navigate = useNavigate();
   const handleBack = useCallback(() => navigate('/'), [navigate]);
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-yellow overflow-x-hidden">
+    <div className="relative flex flex-col min-h-screen bg-yellow overflow-x-clip">
       <BaldosaPattern className="absolute inset-0 pointer-events-none" opacity={0.13} />
       <main className="relative z-[2] flex-1 flex flex-col">
         <Module3Poster onBack={handleBack} />

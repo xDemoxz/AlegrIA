@@ -1,14 +1,16 @@
 /**
  * PosterBackground — miniatura de la galería de FONDOS (imágenes). Se
  * arrastra al cartel con Pointer Events, igual que PosterSticker, así que
- * responde a mouse, touch y gestos sin ramas especiales.
+ * responde a mouse, touch y gestos sin ramas especiales. Tocarlo sin
+ * arrastrar también lo aplica (ver index.jsx). touch-pan-x: en móvil la
+ * tira se desplaza de lado y el gesto vertical queda para arrastrar.
  */
 export default function PosterBackground({ bg, active = false, onDragStart }) {
   return (
     <button
       type="button"
       onPointerDown={(e) => onDragStart(bg.id, e.clientX, e.clientY)}
-      className={`relative w-full aspect-[3/4] rounded-sticker shadow-soft overflow-hidden cursor-grab active:cursor-grabbing touch-none transition-all duration-200 ease-pop hover:-translate-y-1 hover:shadow-soft-lg active:translate-y-0 active:shadow-pressed ${
+      className={`relative w-full aspect-[3/4] rounded-sticker shadow-soft overflow-hidden cursor-grab active:cursor-grabbing touch-pan-x select-none [-webkit-touch-callout:none] transition-all duration-200 ease-pop hover:-translate-y-1 hover:shadow-soft-lg active:translate-y-0 active:shadow-pressed ${
         active ? 'ring-4 ring-verde' : ''
       }`}
       title={bg.label}
