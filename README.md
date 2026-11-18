@@ -49,3 +49,17 @@ next();
 ```
 
 No es necesario editar `App.jsx` ni `useAppStore.js` para trabajar dentro de un módulo.
+
+## Rutas y despliegue
+
+Rutas: `/`, `/poster`, `/ar` y `/ra`. Cualquier otra URL muestra una página 404.
+
+```bash
+npm run build      # genera dist/ y dist/404.html (fallback SPA)
+```
+
+- **GitHub Pages:** el `404.html` copiado por el build hace que refrescar `/poster`, `/ar` o `/ra` cargue la app. Si el sitio vive en un subdirectorio, compila con `VITE_BASE=/AlegrIA/ npm run build`.
+- **Vercel:** `vercel.json` reescribe las rutas a `index.html`.
+- **Netlify:** `public/_redirects` aplica el mismo fallback.
+- **AR:** `/ra` necesita `VITE_AR_URL` (HTTPS) en el entorno de build. Sin ella, la página muestra un aviso de “no disponible” con salida al teaser.
+

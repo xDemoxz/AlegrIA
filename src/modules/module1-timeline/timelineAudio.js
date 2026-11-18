@@ -20,7 +20,6 @@ export function createTimelineAudio() {
   let isMuted = false;
   let isPlaying = false;
   let fadeTimer = null;
-  let waitingForInteraction = false;
   const listeners = new Set();
 
   function notify() {
@@ -115,13 +114,11 @@ export function createTimelineAudio() {
     audio
       .play()
       .then(() => {
-        waitingForInteraction = false;
         fadeIn();
       })
       .catch((err) => {
         // Autoplay policy bloqueó la reproducción automática
         if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
-          waitingForInteraction = true;
           attachInteractionUnlock();
         }
       });
@@ -147,7 +144,6 @@ export function createTimelineAudio() {
     window.removeEventListener('scroll', onUserInteraction);
     window.removeEventListener('touchstart', onUserInteraction);
     window.removeEventListener('keydown', onUserInteraction);
-    waitingForInteraction = false;
   }
 
   function onVisibilityChange() {

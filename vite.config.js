@@ -4,6 +4,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Permite publicar en un subdirectorio (GitHub Pages: VITE_BASE=/AlegrIA/).
+  // Los assets se resuelven con src/lib/asset.js contra esta base.
+  base: process.env.VITE_BASE || '/',
   plugins: [react(), tailwindcss()],
   server: {
     port: 5173,

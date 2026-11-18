@@ -92,6 +92,16 @@ const PosterPreview = forwardRef(function PosterPreview(
               data-placed-sticker
               data-testid="placed-sticker"
               data-sticker-id={p.stickerId}
+              role="button"
+              tabIndex={0}
+              aria-label={`Estampita ${sticker.label}. Pulsa Enter para seleccionarla y editarla.`}
+              onFocus={() => onSelectSticker(p.uid)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectSticker(p.uid);
+                }
+              }}
               onPointerDown={(e) => {
                 e.preventDefault();
                 onPlacedDragStart(p.uid, e.clientX, e.clientY);

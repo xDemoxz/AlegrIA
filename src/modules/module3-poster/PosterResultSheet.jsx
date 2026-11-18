@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PopButton from '../../components/controls/PopButton';
 import { canShareFile, isIOS } from './exportPoster';
 
@@ -19,11 +19,58 @@ export default function PosterResultSheet({ blob, filename, onSave, onClose, sav
   // URL creada en el efecto (no en useMemo): en StrictMode el efecto corre
   // dos veces y la limpieza revocaría una URL memorizada que se sigue usando.
   const [url, setUrl] = useState(null);
+  const sheetRef = useRef(null);
+
   useEffect(() => {
     const u = URL.createObjectURL(blob);
     setUrl(u);
     return () => URL.revokeObjectURL(u);
   }, [blob]);
+
+  // Diálogo modal: foco inicial, trampa de Tab, Escape y bloqueo del scroll
+  // de fondo. Antes el foco se quedaba detrás del overlay.
+  useEffect(() => {
+    const previous = document.activeElement;
+    const node = sheetRef.current;
+    const focusables = () =>
+      Array.from(
+        node?.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+        ) ?? []
+      );
+
+    focusables()[0]?.focus();
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = focusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previous?.focus?.();
+    };
+  }, [onClose]);
 
   const [shareable] = useState(() => canShareFile(new File([blob], filename, { type: 'image/png' })));
   const ios = isIOS();
@@ -36,7 +83,10 @@ export default function PosterResultSheet({ blob, filename, onSave, onClose, sav
       className="fixed inset-0 z-[1000] flex items-end justify-center bg-ink/70 backdrop-blur-sm md:items-center"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="flex max-h-[100svh] w-full max-w-md flex-col items-center gap-4 overflow-y-auto rounded-t-[28px] bg-cream p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-soft-lg md:rounded-[28px]">
+      <div
+        ref={sheetRef}
+        className="flex max-h-[100svh] w-full max-w-md flex-col items-center gap-4 overflow-y-auto rounded-t-[28px] bg-cream p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-soft-lg md:rounded-[28px]"
+      >
         <h2 className="m-0 font-display text-2xl tracking-wide text-red">¡TU CARTEL ESTÁ LISTO!</h2>
 
         {url && (

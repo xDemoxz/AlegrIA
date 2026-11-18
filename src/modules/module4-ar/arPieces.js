@@ -23,6 +23,14 @@ export const AR_PIECES = [
  * URL pública de la experiencia publicada en ZapWorks (ver .env.example).
  * Si se pega sin protocolo, se antepone https:// — sin él el navegador la
  * resuelve como ruta relativa y el iframe cargaría localhost/<url>.
+ *
+ * Solo se acepta HTTPS: la AR pide cámara y, servida por HTTP, el navegador
+ * bloquea getUserMedia. En desarrollo se permite http://localhost.
  */
 const rawArUrl = (import.meta.env.VITE_AR_URL || '').trim();
-export const AR_URL = rawArUrl && !/^https?:\/\//i.test(rawArUrl) ? `https://${rawArUrl}` : rawArUrl;
+const withProtocol =
+  rawArUrl && !/^https?:\/\//i.test(rawArUrl) ? `https://${rawArUrl}` : rawArUrl;
+const isHttps = /^https:\/\//i.test(withProtocol);
+const isLocalDev = import.meta.env.DEV && /^http:\/\/localhost(?::\d+)?\//i.test(withProtocol);
+
+export const AR_URL = isHttps || isLocalDev ? withProtocol : '';

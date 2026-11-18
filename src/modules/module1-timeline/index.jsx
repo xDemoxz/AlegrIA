@@ -58,19 +58,11 @@ export default function Module1Timeline() {
       return true;
     };
 
-    // Recalibración garantizada post-settle: la creación inicial pudo medir
-    // geometría transitoria y los triggers de container no se curan con
-    // refresh. Remontar una vez con geometría final (misma fracción).
-    let healed = false;
+    // Recalibración post-settle: solo si la geometría realmente cambió. Antes
+    // se remontaba siempre a los 2,5 s, duplicando trabajo WebGL y texturas
+    // aunque no hubiera ningún drift.
     const stableTimer = setTimeout(() => {
-      if (healed) return;
-      healed = true;
-      const st = cleanup?.getST?.();
-      const p = st ? st.progress : 0;
-      cleanup?.();
-      cleanup = initTimelineExperience(root, timelineHitos, engineOptions);
-      const nst = cleanup?.getST?.();
-      if (nst) window.scrollTo(0, nst.start + (nst.end - nst.start) * p);
+      healIfDrifted();
     }, 2500);
 
     // Si el ancho del viewport cambia, todas las calibraciones vw del pin,
@@ -130,7 +122,7 @@ export default function Module1Timeline() {
           .info-card. La card dentro del stage-frame viaja con el track y
           quedaba truncada en hitos pares. Contenido por era vía engine;
           visible solo en fullview. */}
-      <aside id="fullview-card" className="info-card" aria-hidden="true" />
+      <aside id="fullview-card" className="info-card" />
 
       {/* 3. Contenedor pineado: el scroll vertical desplaza el track en horizontal */}
       <section className="timeline-wrapper">

@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import HomeApp from './pages/HomeApp';
 import PosterPage from './pages/PosterPage';
 import ARPage from './pages/ARPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 // Lazy: la página AR solo se descarga cuando el usuario entra a /ra.
 const RAExperiencePage = lazy(() => import('./pages/RAExperiencePage'));
@@ -40,6 +41,7 @@ export default function App() {
           </Suspense>
         }
       />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

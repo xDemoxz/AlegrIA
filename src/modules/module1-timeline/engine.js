@@ -64,12 +64,19 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
   // =============================================================================
   // 1. Escena WebGL Three.js con Fondo Transparente (Túnel 3D)
   // =============================================================================
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
-    antialias: true,
-    powerPreference: 'high-performance',
-    alpha: true,
-  });
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      powerPreference: 'high-performance',
+      alpha: true,
+    });
+  } catch {
+    // Sin contexto WebGL el módulo no puede montarse; el ErrorBoundary del
+    // home muestra un fallback en vez de tumbar la página entera.
+    throw new Error('Este navegador no pudo iniciar WebGL.');
+  }
   renderer.setClearColor(0x000000, 0);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -81,6 +88,8 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
   const geometry = new THREE.PlaneGeometry(1, 1, 48, 48);
   const loader = new THREE.TextureLoader();
   loader.setCrossOrigin('anonymous');
+  // Texturas de relleno creadas en memoria: también hay que liberarlas.
+  const placeholderTextures = [];
 
   function placeholderTex(hex) {
     const c = document.createElement('canvas');
@@ -91,6 +100,7 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
     ctx.fillRect(0, 0, 16, 16);
     const t = new THREE.CanvasTexture(c);
     t.minFilter = THREE.LinearFilter;
+    placeholderTextures.push(t);
     return t;
   }
 
@@ -243,7 +253,6 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
       material.uniforms.uSepia2.value = ERAS[eraIndex].sepiaVal ?? 0.0;
     }
 
-    const item = items[eraIndex];
     // Origen congelado: se captura una vez en onStart del tween del túnel.
     // Releer getBoundingClientRect() en cada frame bailaba porque el track
     // (scrollTween) + stageFrame se mueven a la vez que t: 0→1 interpola.
@@ -368,7 +377,7 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
           </div>
           <span class="snapshot-label">${era.year} · ${era.label}</span>
         </div>
-        <div class="info-card">
+        <div class="info-card" aria-hidden="true">
           <div class="card-badge-row">
             <span class="card-badge-year">${era.year}</span>
             <span class="card-chip-cat">${era.label}</span>
@@ -1012,6 +1021,13 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
     ScrollTrigger.getAll().forEach((t) => {
       if (!foreignTriggers.has(t)) t.kill();
     });
+    // Liberar GPU: sin esto cada remontaje deja geometría, material y las 11
+    // texturas vivas hasta que el navegador recicla el contexto.
+    for (const texture of new Set([...textures, ...placeholderTextures])) {
+      texture.dispose();
+    }
+    geometry.dispose();
+    material.dispose();
     renderer.dispose();
     rootEl._tlCleanup = null;
   };

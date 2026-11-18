@@ -231,6 +231,14 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
     setToast('Cartel reiniciado');
   }, [reset]);
 
+  // Enter/Espacio en la galería: mismo efecto que tocar (centro del cartel).
+  const handleKeyboardActivate = useCallback(
+    (type, id, variantIndex) => applyGalleryItem({ type, id, variantIndex }, undefined, undefined),
+    [applyGalleryItem]
+  );
+
+  const handleCloseResult = useCallback(() => setResult(null), []);
+
   return (
     <section className="group/poster flex flex-1 flex-col md:grid md:min-h-[80vh] md:grid-cols-[minmax(320px,460px)_1fr]">
       <PosterForm
@@ -240,6 +248,7 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
         onTextChange={setText}
         onStickerDragStart={onStickerDragStart}
         onBgDragStart={onBgDragStart}
+        onKeyboardActivate={handleKeyboardActivate}
         onSelectVariant={setStickerVariant}
         onBack={onBack}
         onReset={handleReset}
@@ -313,7 +322,7 @@ export default function Module3Poster({ onBack: onBackProp } = {}) {
           filename={result.filename}
           saving={saving}
           onSave={handleSaveResult}
-          onClose={() => setResult(null)}
+          onClose={handleCloseResult}
         />
       )}
 

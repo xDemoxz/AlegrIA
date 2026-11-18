@@ -30,7 +30,7 @@ function ColorDot({ color, name, selected, onClick }) {
  * Si tiene variants, los puntos de color debajo eligen con qué color se
  * agrega (la miniatura muestra el color elegido).
  */
-export default function PosterSticker({ sticker, onDragStart, onSelectVariant, selectedVariant }) {
+export default function PosterSticker({ sticker, onDragStart, onActivate, onSelectVariant, selectedVariant }) {
   const hasVariants = sticker.variants?.length > 0;
   const effectiveImage = hasVariants
     ? sticker.variants[selectedVariant ?? 0]?.image ?? sticker.image
@@ -40,9 +40,14 @@ export default function PosterSticker({ sticker, onDragStart, onSelectVariant, s
 
   return (
     <div>
+      {/* Enter/Espacio disparan click con detail 0: así se agrega con teclado
+          sin duplicar el toque táctil (que ya lo agrega en pointerup). */}
       <button
         type="button"
         onPointerDown={(e) => onDragStart(sticker.id, e.clientX, e.clientY, selectedVariant)}
+        onClick={(e) => {
+          if (e.detail === 0) onActivate?.('sticker', sticker.id, selectedVariant);
+        }}
         className="relative w-full aspect-[3/4] rounded-sticker shadow-soft overflow-hidden cursor-grab active:cursor-grabbing touch-pan-x select-none [-webkit-touch-callout:none] transition-all duration-200 ease-pop hover:-translate-y-1 hover:rotate-1 hover:shadow-soft-lg active:translate-y-0 active:rotate-0 active:shadow-pressed bg-white"
         title={hasVariants ? `${sticker.label} (${sticker.variants.length} colores)` : sticker.label}
         aria-label={`Estampita ${sticker.label}`}

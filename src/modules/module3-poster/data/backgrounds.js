@@ -1,3 +1,5 @@
+import { asset } from '../../../lib/asset';
+
 /**
  * Fondos del generador de pósters (Módulo 3) — imágenes de public/assets/fondos.
  * El participante los arrastra al cartel y puede cambiarlos las veces que
@@ -13,35 +15,35 @@ export const BACKGROUNDS = [
   {
     id: 'bg-confeti',
     label: 'Confeti',
-    image: '/assets/fondos/confeti-nocturno.webp',
+    image: asset('assets/fondos/confeti-nocturno.webp'),
     tone: 'light',
     position: 'center',
   },
   {
     id: 'bg-carnaval',
     label: 'Carnaval',
-    image: '/assets/fondos/carnaval-amarillo.webp',
+    image: asset('assets/fondos/carnaval-amarillo.webp'),
     tone: 'dark',
     position: 'center',
   },
   {
     id: 'bg-selva',
     label: 'Selva',
-    image: '/assets/fondos/selva-tropical.webp',
+    image: asset('assets/fondos/selva-tropical.webp'),
     tone: 'light',
     position: 'center',
   },
   {
     id: 'bg-neon',
     label: 'Neón',
-    image: '/assets/fondos/neon-festival.webp',
+    image: asset('assets/fondos/neon-festival.webp'),
     tone: 'light',
     position: 'center',
   },
   {
     id: 'bg-mascara',
     label: 'Máscara',
-    image: '/assets/fondos/mascara-plumas.webp',
+    image: asset('assets/fondos/mascara-plumas.webp'),
     tone: 'light',
     position: 'right center',
   },

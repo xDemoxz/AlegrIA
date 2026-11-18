@@ -1,3 +1,5 @@
+import { asset } from '../../lib/asset';
+
 import { SECTION } from '../../store/useAppStore';
 
 const ITEMS = [
@@ -8,8 +10,7 @@ const ITEMS = [
 
 /** HeaderBanner — cabecera fixed con hide-on-scroll (translateY).
  * Altura fija h-[56px] md:h-[64px] para sync con ModuleNav; sin flex-wrap inestable. */
-export default function HeaderBanner({ active, onSelect, badge = '', badgeImage, hidden = false }) {
-  const showBadge = Boolean(badge || badgeImage);
+export default function HeaderBanner({ active, onSelect, hidden = false }) {
   return (
     <header
       className="fixed top-0 inset-x-0 z-50 bg-ink border-b border-white/10 shadow-soft overflow-hidden h-[56px] md:h-[64px] flex items-center transition-transform duration-300 ease-out will-change-transform"
@@ -22,7 +23,7 @@ export default function HeaderBanner({ active, onSelect, badge = '', badgeImage,
           </div>
           <span className="hidden lg:inline font-display text-sm md:text-2xl tracking-[0.18em] text-white whitespace-nowrap">DEL RÍO — TOUR</span>
           <img
-            src="/assets/logos/logo-barrio-abajo.png"
+            src={asset('assets/logos/logo-barrio-abajo.png')}
             alt="Barrio Abajo"
             className="hidden xl:block h-8 w-auto object-contain ml-1 opacity-90 shrink-0"
             loading="eager"

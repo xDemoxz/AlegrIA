@@ -73,12 +73,17 @@
   padding: 1.1rem 1.6rem;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  /* visibility saca el HUD del orden de tabulación cuando está oculto;
+     el retardo mantiene el fade de salida. */
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
   color: #fff;
 }
 
 #hud.is-active {
   opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0s;
 }
 
 .hud-kicker,
@@ -715,14 +720,17 @@
   bottom: 24px;
   z-index: 40;
   width: min(540px, 84vw);
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
 }
 
 #progress.is-active {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0s;
 }
 
 #progress-bar {

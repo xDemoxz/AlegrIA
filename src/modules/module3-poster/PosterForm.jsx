@@ -64,6 +64,7 @@ export default function PosterForm({
   onTextChange,
   onStickerDragStart,
   onBgDragStart,
+  onKeyboardActivate,
   onSelectVariant,
   onBack,
   onReset,
@@ -94,7 +95,12 @@ export default function PosterForm({
         <div className={`${STRIP} md:grid-cols-5`} data-testid="bg-gallery">
           {BACKGROUNDS.map((bg) => (
             <div key={bg.id} className="w-18 shrink-0 md:w-auto">
-              <PosterBackground bg={bg} active={activeBackgroundId === bg.id} onDragStart={onBgDragStart} />
+              <PosterBackground
+                bg={bg}
+                active={activeBackgroundId === bg.id}
+                onDragStart={onBgDragStart}
+                onActivate={onKeyboardActivate}
+              />
             </div>
           ))}
         </div>
@@ -110,6 +116,7 @@ export default function PosterForm({
               <PosterSticker
                 sticker={s}
                 onDragStart={onStickerDragStart}
+                onActivate={onKeyboardActivate}
                 onSelectVariant={onSelectVariant}
                 selectedVariant={stickerVariants[s.id]}
               />
