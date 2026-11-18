@@ -30,7 +30,7 @@ export default function HeaderBanner({ active, onSelect, hidden = false }) {
           />
         </div>
         
-        <nav className="flex items-center gap-2 md:gap-3 shrink-0">
+        <nav aria-label="Navegación principal" className="flex items-center gap-2 md:gap-3 shrink-0">
           {ITEMS.map((item) => {
             const isActive = item.section === active;
             return (
