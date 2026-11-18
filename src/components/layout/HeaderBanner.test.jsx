@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import HeaderBanner from './HeaderBanner';
-import { SECTION } from '../../store/useAppStore';
+import { SECTION } from '../../lib/sections';
 
 describe('HeaderBanner', () => {
   it('marca la sección activa con aria-current', () => {

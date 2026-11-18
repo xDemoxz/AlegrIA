@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SECTION } from '../store/useAppStore';
+import { SECTION } from '../lib/sections';
 import HeaderBanner from '../components/layout/HeaderBanner';
 import FooterBajero from '../components/layout/FooterBajero';
 import StoryCarousel from '../components/media/StoryCarousel';

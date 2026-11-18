@@ -20,7 +20,7 @@ export default defineConfig({
     { name: 'android', use: { ...devices['Pixel 7'] } },
     // WebKit no está instalado: iPhone emulado sobre Chromium (UA + touch +
     // viewport), suficiente para el flujo de guardar por Web Share.
-    { name: 'iphone', use: { ...devices['iPhone 13'], browserName: 'chromium', defaultBrowserType: 'chromium' } },
+    { name: 'iphone', use: { ...devices['iPhone 13'], browserName: 'chromium' } },
   ],
   webServer: {
     command: `npx vite --port ${PORT} --strictPort`,

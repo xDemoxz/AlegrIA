@@ -1,9 +1,35 @@
-/* Barrio Abajo del Río / AlegrIA — Tailwind v4, config CSS-first.
+/* Barrio Abajo del Río / AlegrIA - Tailwind v4, config CSS-first.
  * Archivo real de tokens (v2). Se importa una sola vez desde src/index.css:
  *   @import "./styles/theme.v4.css";
  * Sustituye a tailwind.config.js + postcss.config.js (eliminados en la migración).
  */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;600&display=swap');
+@import "tailwindcss";
+
+/* Fuentes auto-hospedadas (subconjunto latin): sin peticiones a Google.
+ * Los woff2 viven en src/assets/fonts y Vite los versiona/rewritea con la base. */
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/bebas-neue-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Work Sans';
+  font-style: normal;
+  /* Work Sans se descarga como fuente variable: un solo archivo cubre 400–900. */
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('../assets/fonts/work-sans-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Work Sans';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/work-sans-latin-500-italic.woff2') format('woff2');
+}
+
 @import "tailwindcss";
 
 @theme {

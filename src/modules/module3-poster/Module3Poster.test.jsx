@@ -75,7 +75,7 @@ describe('Módulo 3 — tocar para agregar (móvil)', () => {
     expect(within(alegria).getByLabelText('Color Azul')).toHaveAttribute('aria-pressed', 'true');
     expect(placed()).toHaveLength(0);
     tap(screen.getByLabelText('Estampita Alegría'));
-    expect(within(placed()[0]).getByRole('img')).toHaveAttribute('src', '/assets/iconos/01-alegria-3.png');
+    expect(within(placed()[0]).getByRole('img')).toHaveAttribute('src', '/assets/iconos/01-alegria-3.webp');
   });
 
   it('un gesto cancelado (scroll de la tira) no agrega nada ni deja fantasma', () => {

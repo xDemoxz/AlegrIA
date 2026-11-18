@@ -1,22 +1,26 @@
 /**
- * Genera las versiones WebP de las imágenes de la primera pantalla
- * (carrusel) y de la línea de tiempo (fotos de hitos).
+ * Genera las versiones WebP de las imágenes que sirve la app.
  *
  * Uso: npm run optimize:images
  *
- * - Carrusel: se redimensiona a 760px de ancho (2× la card de 340px) y se
- *   recorta a 4:5 para no pagar el alto sobrante del PNG original.
- * - Timeline: se mantiene el ancho original (se usa como textura a pantalla
- *   completa en el túnel WebGL); solo cambia el formato.
+ * Los originales viven en `design/source` (fuera de `public`, así Vite no los
+ * copia al build) y las versiones optimizadas se escriben en
+ * `public/assets/<carpeta>`. Este script es reproducible: se puede volver a
+ * ejecutar cuando cambie un original.
  *
- * Los PNG originales se conservan como fuente: este script debe poder
- * regenerar los .webp en cualquier momento.
+ * - Carrusel: 760×950 (2× la card de 340px), recorte 4:5.
+ * - Timeline: 1280px de ancho; cubre el túnel a pantalla completa sin
+ *   enviar originales de 4K.
+ * - Logos: 320px (se muestran a 32–44px de alto; cubre pantallas 3×).
+ * - Iconos del póster: 480px con transparencia (se usan como estampitas).
  */
 import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
+const SOURCE = path.join(ROOT, 'design/source');
+const OUTPUT = path.join(ROOT, 'public/assets');
 
 async function newerThan(source, target) {
   try {
@@ -27,9 +31,9 @@ async function newerThan(source, target) {
   }
 }
 
-async function convert(relativePath, { width, height, quality }) {
-  const source = path.join(ROOT, relativePath);
-  const target = source.replace(/\.(png|jpe?g)$/i, '.webp');
+async function convert(dir, name, { width, height, quality }) {
+  const source = path.join(SOURCE, dir, name);
+  const target = path.join(OUTPUT, dir, name.replace(/\.(png|jpe?g)$/i, '.webp'));
 
   if (await newerThan(source, target)) {
     return { file: path.basename(target), skipped: true };
@@ -40,37 +44,27 @@ async function convert(relativePath, { width, height, quality }) {
     pipeline = pipeline.resize({ width, height, fit: 'cover', withoutEnlargement: true });
   }
 
-  const info = await pipeline.webp({ quality, effort: 5 }).toFile(target);
+  const info = await pipeline.webp({ quality, effort: 5, alphaQuality: 100 }).toFile(target);
   return { file: path.basename(target), bytes: info.size, skipped: false };
 }
 
-const jobs = [];
-
-const carruselDir = path.join(ROOT, 'public/assets/carrusel');
-for (const name of await readdir(carruselDir)) {
-  if (!name.endsWith('.png')) continue;
-  jobs.push(convert(`public/assets/carrusel/${name}`, { width: 760, height: 950, quality: 78 }));
+async function jobsFor(dir, options) {
+  const names = await readdir(path.join(SOURCE, dir));
+  return names
+    .filter((name) => /\.(png|jpe?g)$/i.test(name))
+    .map((name) => convert(dir, name, options));
 }
 
-const timelineDir = path.join(ROOT, 'public/assets/timeline');
-for (const name of await readdir(timelineDir)) {
-  if (!/\.(png|jpe?g)$/i.test(name)) continue;
-  // 1280px cubre el túnel a pantalla completa sin enviar originales de 4K.
-  jobs.push(convert(`public/assets/timeline/${name}`, { width: 1280, quality: 80 }));
-}
+const results = await Promise.all([
+  ...(await jobsFor('carrusel', { width: 760, height: 950, quality: 78 })),
+  ...(await jobsFor('timeline', { width: 1280, quality: 80 })),
+  ...(await jobsFor('logos', { width: 320, quality: 88 })),
+  ...(await jobsFor('iconos', { width: 480, quality: 86 })),
+]);
 
-// Logos: se muestran a 32–44px de alto; 128px cubre pantallas 3×.
-const logosDir = path.join(ROOT, 'public/assets/logos');
-for (const name of await readdir(logosDir)) {
-  if (!/\.(png|jpe?g)$/i.test(name)) continue;
-  jobs.push(convert(`public/assets/logos/${name}`, { width: 320, quality: 88 }));
-}
-
-const results = await Promise.all(jobs);
 const created = results.filter((r) => !r.skipped);
-const skipped = results.filter((r) => r.skipped);
 
 for (const r of created) {
   console.log(`✓ ${r.file} — ${Math.round(r.bytes / 1024)} KB`);
 }
-console.log(`\n${created.length} generadas, ${skipped.length} ya estaban al día.`);
+console.log(`\n${created.length} generadas, ${results.length - created.length} ya estaban al día.`);

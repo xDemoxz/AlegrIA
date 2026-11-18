@@ -1,6 +1,6 @@
 import { asset } from '../../lib/asset';
 
-import { SECTION } from '../../store/useAppStore';
+import { SECTION } from '../../lib/sections';
 
 const ITEMS = [
   { section: SECTION.MOD1_TIMELINE, label: '1 · INICIO' },

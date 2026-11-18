@@ -1,5 +1,4 @@
 import { useCallback, useRef, useState } from 'react';
-import { useAppStore } from '../../store/useAppStore';
 import { usePosterState } from './usePosterState';
 import PosterForm from './PosterForm';
 import PosterPreview from './PosterPreview';
@@ -31,11 +30,9 @@ export const DRAG_THRESHOLD_PX = 8;
  * tiras con scroll horizontal (touch-action: pan-x), así un gesto lateral
  * desplaza la tira y uno hacia arriba arrastra al cartel.
  */
-export default function Module3Poster({ onBack: onBackProp } = {}) {
-  const prev = useAppStore((s) => s.prev);
-  // En página standalone (/poster) el volver navega al home; dentro del
-  // switcher legacy usa prev() del store. Prop opcional, compatible.
-  const onBack = onBackProp ?? prev;
+export default function Module3Poster({ onBack = () => {} } = {}) {
+  // En página standalone (/poster) el volver navega al home; el módulo no
+  // conoce el router, así que la acción siempre llega por prop.
 
   const {
     title,
