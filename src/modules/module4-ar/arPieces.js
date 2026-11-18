@@ -27,10 +27,25 @@ export const AR_PIECES = [
  * Solo se acepta HTTPS: la AR pide cámara y, servida por HTTP, el navegador
  * bloquea getUserMedia. En desarrollo se permite http://localhost.
  */
-const rawArUrl = (import.meta.env.VITE_AR_URL || '').trim();
-const withProtocol =
-  rawArUrl && !/^https?:\/\//i.test(rawArUrl) ? `https://${rawArUrl}` : rawArUrl;
-const isHttps = /^https:\/\//i.test(withProtocol);
-const isLocalDev = import.meta.env.DEV && /^http:\/\/localhost(?::\d+)?\//i.test(withProtocol);
+export function normalizeArUrl(raw, { allowLocalhost = import.meta.env.DEV } = {}) {
+  const value = String(raw ?? '').trim();
+  if (!value) return '';
 
-export const AR_URL = isHttps || isLocalDev ? withProtocol : '';
+  // Cualquier esquema explícito se respeta para poder rechazarlo abajo
+  // (javascript:, data:, file:…); si no hay esquema se asume https.
+  const candidate = /^[a-z][a-z0-9+.-]*:/i.test(value) ? value : `https://${value}`;
+
+  let url;
+  try {
+    url = new URL(candidate);
+  } catch {
+    return '';
+  }
+
+  const isLocalhost = url.protocol === 'http:' && /^(localhost|127\.0\.0\.1)$/i.test(url.hostname);
+  if (url.protocol !== 'https:' && !(allowLocalhost && isLocalhost)) return '';
+
+  return url.toString();
+}
+
+export const AR_URL = normalizeArUrl(import.meta.env.VITE_AR_URL);

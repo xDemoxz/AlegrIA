@@ -36,5 +36,9 @@ export function mockPointer(coarse) {
 }
 mockPointer(false);
 
+// jsdom no implementa scrollTo: App monta ScrollToTop en cada ruta y sin
+// este stub cada test imprime un "Not implemented: window.scrollTo".
+window.scrollTo = () => {};
+
 if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:mock';
 if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {};

@@ -544,8 +544,11 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
       duration = Math.min(3.6, 2.0 + stepDiff * 0.4);
     }
     if (customDuration) duration = customDuration;
+    // Con prefers-reduced-motion los saltos siguen ocurriendo (el destino es
+    // el mismo), pero sin el desplazamiento cinematográfico de ~2,5 s.
+    if (reduceMotion) duration = customDuration ?? 0.3;
 
-    const ease = 'power2.inOut';
+    const ease = reduceMotion ? 'none' : 'power2.inOut';
 
     const proxy = { y: window.scrollY };
     stageTween?.kill();

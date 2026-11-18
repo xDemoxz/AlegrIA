@@ -53,4 +53,20 @@ describe('rutas públicas', () => {
     expect(screen.getByText('404')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Volver al inicio' })).toHaveAttribute('href', '/');
   });
+
+  it.each(['/', '/poster', '/ar', '/no-existe'])(
+    'la ruta %s ofrece saltar el encabezado y tiene un main enfocable',
+    async (path) => {
+      renderRoute(path);
+
+      expect(screen.getByRole('link', { name: 'Saltar al contenido' })).toHaveAttribute(
+        'href',
+        '#main-content'
+      );
+
+      const main = await screen.findByRole('main');
+      expect(main).toHaveAttribute('id', 'main-content');
+      expect(main).toHaveAttribute('tabindex', '-1');
+    }
+  );
 });

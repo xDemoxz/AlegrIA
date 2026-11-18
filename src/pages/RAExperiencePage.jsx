@@ -35,6 +35,18 @@ const IFRAME_ALLOW = [
   'autoplay',
 ].join('; ');
 
+// El runtime de Zappar necesita scripts + su propio origen (WASM, cámara,
+// workers). `allow-same-origin` aquí no da acceso al DOM del padre porque la
+// experiencia vive en otro origen; el sandbox solo bloquea navegación top,
+// descargas y plugins que la experiencia no usa.
+const IFRAME_SANDBOX = [
+  'allow-scripts',
+  'allow-same-origin',
+  'allow-popups',
+  'allow-presentation',
+  'allow-forms',
+].join(' ');
+
 const LOAD_TIMEOUT_MS = 15_000;
 
 export default function RAExperiencePage() {
@@ -69,13 +81,19 @@ export default function RAExperiencePage() {
   }, []);
 
   return createPortal(
-    <div className="fixed inset-0 bg-ink" style={{ zIndex: 2147483647 }}>
+    <div
+      id="main-content"
+      tabIndex={-1}
+      className="fixed inset-0 bg-ink outline-none"
+      style={{ zIndex: 2147483647 }}
+    >
       {AR_URL ? (
         <iframe
           key={attempt}
           title="Recorrido en realidad aumentada — Barrio Abajo"
           src={AR_URL}
           allow={IFRAME_ALLOW}
+          sandbox={IFRAME_SANDBOX}
           allowFullScreen
           referrerPolicy="strict-origin-when-cross-origin"
           onLoad={() => {

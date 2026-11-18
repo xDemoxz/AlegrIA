@@ -78,7 +78,7 @@ export default function HomeApp() {
 
       <StoryCarousel />
       <HomeMuralBanner />
-      <main id="main-content" className="relative z-[2] flex-1 flex flex-col">
+      <main id="main-content" tabIndex={-1} className="relative z-[2] flex-1 flex flex-col outline-none">
         <Home />
       </main>
 

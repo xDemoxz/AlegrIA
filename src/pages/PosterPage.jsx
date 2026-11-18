@@ -19,7 +19,7 @@ export default function PosterPage() {
   return (
     <div className="relative flex flex-col min-h-screen bg-yellow overflow-x-clip">
       <BaldosaPattern className="absolute inset-0 pointer-events-none" opacity={0.13} />
-      <main className="relative z-[2] flex-1 flex flex-col">
+      <main id="main-content" tabIndex={-1} className="relative z-[2] flex-1 flex flex-col outline-none">
         <Module3Poster onBack={handleBack} />
       </main>
       <GestureCursor enabled />

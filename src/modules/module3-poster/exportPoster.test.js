@@ -8,6 +8,8 @@ import {
   getExportScale,
   renderPosterToBlob,
   savePosterBlob,
+  oklchToRgb,
+  replaceUnsupportedColors,
   EXPORT_WIDTH,
 } from './exportPoster';
 
@@ -38,6 +40,44 @@ describe('getExportScale', () => {
   });
   it('cae a 2 si el nodo no tiene ancho', () => {
     expect(getExportScale(0)).toBe(2);
+  });
+});
+
+describe('colores oklch del PNG', () => {
+  it('convierte blanco, negro y un rojo de la paleta a rgba', () => {
+    expect(oklchToRgb('oklch(1 0 0)')).toBe('rgba(255, 255, 255, 1)');
+    expect(oklchToRgb('oklch(0 0 0)')).toBe('rgba(0, 0, 0, 1)');
+    expect(oklchToRgb('oklch(0.577 0.245 27.325)')).toBe('rgba(231, 0, 11, 1)');
+  });
+
+  it('respeta el alfa y los porcentajes', () => {
+    expect(oklchToRgb('oklch(0.7 0.1 200 / 50%)')).toBe('rgba(64, 177, 183, 0.5)');
+    expect(oklchToRgb('oklch(100% 0% 0deg)')).toBe('rgba(255, 255, 255, 1)');
+  });
+
+  it('acepta oklab y valores sin unidad', () => {
+    expect(oklchToRgb('oklab(1 0 0)')).toBe('rgba(255, 255, 255, 1)');
+    expect(oklchToRgb('oklab(0 0 0 / 0.5)')).toBe('rgba(0, 0, 0, 0.5)');
+  });
+
+  it('devuelve null si el color no es oklch/oklab o está incompleto', () => {
+    expect(oklchToRgb('#fff')).toBeNull();
+    expect(oklchToRgb('rgb(1, 2, 3)')).toBeNull();
+    expect(oklchToRgb('oklch(1 0)')).toBeNull();
+    expect(oklchToRgb('oklch(1 0 0 / nope)')).toBeNull();
+    expect(oklchToRgb(undefined)).toBeNull();
+  });
+
+  it('reemplaza los colores dentro de un valor compuesto (box-shadow)', () => {
+    const shadow = '0 0 0 1px oklch(0.7 0.1 200), 0 2px 4px oklch(0 0 0 / 20%)';
+    expect(replaceUnsupportedColors(shadow)).toBe(
+      '0 0 0 1px rgba(64, 177, 183, 1), 0 2px 4px rgba(0, 0, 0, 0.2)'
+    );
+  });
+
+  it('deja intacto lo que ya entiende html2canvas y usa el fallback si no puede convertir', () => {
+    expect(replaceUnsupportedColors('rgba(0, 0, 0, 0.5)')).toBe('rgba(0, 0, 0, 0.5)');
+    expect(replaceUnsupportedColors('1px solid oklch(nope)', '#000000')).toBe('1px solid #000000');
   });
 });
 
@@ -78,6 +118,30 @@ describe('renderPosterToBlob', () => {
     });
     await renderPosterToBlob(node);
     expect(html2canvasMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('convierte los colores oklch del clon a rgba (el texto no desaparece)', async () => {
+    html2canvasMock.mockImplementation(async (_n, opts) => {
+      const frame = document.createElement('iframe');
+      document.body.appendChild(frame);
+      const clone = frame.contentDocument;
+      clone.body.innerHTML = `
+        <div data-poster-canvas>
+          <h2 style="color: oklch(0.577 0.245 27.325)">Barrio Abajo</h2>
+          <span style="background-color: oklch(0.7 0.1 200 / 50%); box-shadow: 0 0 0 1px oklch(0 0 0)">chip</span>
+        </div>`;
+      opts.onclone(clone);
+      const title = clone.querySelector('h2');
+      const chip = clone.querySelector('span');
+      // jsdom normaliza rgba(..., 1) a rgb(...) para `color`.
+      expect(title.style.color).toBe('rgb(231, 0, 11)');
+      expect(title.style.color).not.toContain('transparent');
+      expect(chip.style.backgroundColor).toBe('rgba(64, 177, 183, 0.5)');
+      expect(chip.style.boxShadow).toContain('rgba(0, 0, 0, 1)');
+      frame.remove();
+      return fakeCanvas();
+    });
+    await renderPosterToBlob(node);
   });
 
   it('reintenta con foreignObject si el render normal falla', async () => {

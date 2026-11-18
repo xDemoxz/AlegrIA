@@ -3,7 +3,11 @@ import { Link } from 'react-router-dom';
 /** Ruta comodín: sin esto una URL desconocida renderiza una pantalla vacía. */
 export default function NotFoundPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-5 bg-cream px-6 text-center">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="flex min-h-screen flex-col items-center justify-center gap-5 bg-cream px-6 text-center outline-none"
+    >
       <p className="font-display text-7xl leading-none tracking-wide text-red">404</p>
       <h1 className="max-w-[22ch] font-display text-3xl leading-tight tracking-wide text-ink">
         Ese rincón del barrio no existe

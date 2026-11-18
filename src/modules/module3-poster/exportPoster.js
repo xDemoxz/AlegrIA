@@ -31,6 +31,113 @@ export function getExportScale(nodeWidth) {
   return EXPORT_WIDTH / nodeWidth;
 }
 
+// ---------------------------------------------------------------------------
+// Colores oklch/oklab → sRGB
+// ---------------------------------------------------------------------------
+// Tailwind v4 emite sus tokens en oklch y html2canvas solo entiende hex/rgb.
+// Antes el clon reemplazaba la declaración completa por `transparent`: si el
+// navegador reportaba el color del título en oklch, el texto desaparecía del
+// PNG. Aquí se convierte el color al espacio sRGB (misma matemática que la
+// especificación CSS Color 4), con alfa incluida.
+
+const clamp01 = (n) => Math.min(1, Math.max(0, n));
+
+/** '70%' → 0.7; '0.7' → 0.7. `percentScale` define cuánto vale 100 %. */
+function parseFraction(raw, percentScale = 1) {
+  if (raw === 'none') return 0;
+  const value = String(raw).trim();
+  if (value.endsWith('%')) {
+    const n = Number.parseFloat(value);
+    return Number.isFinite(n) ? (n / 100) * percentScale : null;
+  }
+  const n = Number.parseFloat(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function parseAngle(raw) {
+  if (raw === 'none') return 0;
+  const value = String(raw).trim().toLowerCase();
+  const n = Number.parseFloat(value);
+  if (!Number.isFinite(n)) return null;
+  if (value.endsWith('rad')) return n;
+  if (value.endsWith('turn')) return n * Math.PI * 2;
+  if (value.endsWith('grad')) return (n * Math.PI) / 200;
+  return (n * Math.PI) / 180; // deg o número sin unidad
+}
+
+function parseAlpha(raw) {
+  const a = parseFraction(raw);
+  return a === null ? null : clamp01(a);
+}
+
+/** Convierte un color `oklch(...)`/`oklab(...)` completo a `rgba(...)`. */
+export function oklchToRgb(color) {
+  const text = String(color ?? '').trim();
+  const match = /^okl(ab|ch)\(\s*([^)]+)\)$/i.exec(text);
+  if (!match) return null;
+
+  const isPolar = match[1].toLowerCase() === 'ch';
+  const [rawValues, rawAlpha = '1'] = match[2].split('/');
+  const parts = rawValues.trim().split(/[\s,]+/).filter(Boolean);
+  if (parts.length < 3) return null;
+
+  const alpha = parseAlpha(rawAlpha);
+  if (alpha === null) return null;
+
+  const L = parseFraction(parts[0]);
+  if (L === null) return null;
+
+  let a;
+  let b;
+  if (isPolar) {
+    const C = parseFraction(parts[1], 0.4);
+    const H = parseAngle(parts[2]);
+    if (C === null || H === null) return null;
+    a = C * Math.cos(H);
+    b = C * Math.sin(H);
+  } else {
+    a = parseFraction(parts[1]);
+    b = parseFraction(parts[2]);
+    if (a === null || b === null) return null;
+  }
+
+  // OKLab → LMS → sRGB lineal.
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.291485548 * b;
+  const l = l_ ** 3;
+  const m = m_ ** 3;
+  const s = s_ ** 3;
+
+  const linear = [
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+  ];
+
+  // sRGB lineal → gamma compuesta (la que consumen canvas y html2canvas).
+  const toByte = (value) => {
+    const c = clamp01(value);
+    const gamma = c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
+    return Math.round(clamp01(gamma) * 255);
+  };
+
+  const [r, g, b2] = linear.map(toByte);
+  return `rgba(${r}, ${g}, ${b2}, ${Number(alpha.toFixed(3))})`;
+}
+
+/**
+ * Sustituye cada oklch/oklab de un valor CSS (p. ej. el color de un
+ * `box-shadow` compuesto) por su equivalente rgba. Si un token no se puede
+ * interpretar usa `fallback`.
+ */
+export function replaceUnsupportedColors(value, fallback = 'transparent') {
+  const text = String(value ?? '');
+  if (!/okl(?:ab|ch)\(/i.test(text)) return text;
+  return text.replace(/okl(?:ab|ch)\([^)]*\)/gi, (token) => oklchToRgb(token) ?? fallback);
+}
+
+
 /** Pantalla táctil como puntero principal (teléfonos/tablets). */
 export function isTouchDevice() {
   return typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
@@ -125,10 +232,10 @@ export async function renderPosterToBlob(node) {
         const style = clonedDoc.defaultView.getComputedStyle(el);
         ['backgroundColor', 'color', 'borderColor', 'boxShadow'].forEach((prop) => {
           const val = style[prop];
-          if (val && (val.includes('oklab') || val.includes('oklch'))) {
-            // html2canvas no soporta oklab/oklch
-            el.style[prop] = val.replace(/okl(?:ab|ch)\([^)]+\)/g, 'transparent');
-          }
+          if (!val || !/okl(?:ab|ch)\(/i.test(val)) return;
+          // El texto cae a negro (legible) si el token no se puede convertir;
+          // fondos y bordes caen a transparente como antes.
+          el.style[prop] = replaceUnsupportedColors(val, prop === 'color' ? '#000000' : 'transparent');
         });
       }
     },

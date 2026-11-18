@@ -4,6 +4,8 @@ import HomeApp from './pages/HomeApp';
 import PosterPage from './pages/PosterPage';
 import ARPage from './pages/ARPage';
 import NotFoundPage from './pages/NotFoundPage';
+import SkipLink from './components/layout/SkipLink';
+import ScrollToTop from './components/layout/ScrollToTop';
 
 // Lazy: la página AR solo se descarga cuando el usuario entra a /ra.
 const RAExperiencePage = lazy(() => import('./pages/RAExperiencePage'));
@@ -29,19 +31,23 @@ const RAExperiencePage = lazy(() => import('./pages/RAExperiencePage'));
  */
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomeApp />} />
-      <Route path="/poster" element={<PosterPage />} />
-      <Route path="/ar" element={<ARPage />} />
-      <Route
-        path="/ra"
-        element={
-          <Suspense fallback={<div className="fixed inset-0 bg-ink" />}>
-            <RAExperiencePage />
-          </Suspense>
-        }
-      />
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+    <>
+      <SkipLink />
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<HomeApp />} />
+        <Route path="/poster" element={<PosterPage />} />
+        <Route path="/ar" element={<ARPage />} />
+        <Route
+          path="/ra"
+          element={
+            <Suspense fallback={<div className="fixed inset-0 bg-ink" />}>
+              <RAExperiencePage />
+            </Suspense>
+          }
+        />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </>
   );
 }

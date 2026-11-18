@@ -7,13 +7,21 @@ import PopButton from '../../components/controls/PopButton';
 
 /** Badge circular "?" — misma idea del mockup. En táctil no hay tooltip
  * nativo, así que tocarlo despliega la ayuda debajo del paso.
- * v2: sin contorno negro, sombra difuminada + pequeño rebote en hover. */
-function HelpBadge({ hint, open, onToggle }) {
+ * v2: sin contorno negro, sombra difuminada + pequeño rebote en hover.
+ * v3: el nombre accesible incluye el paso ("Ayuda: 2. Elige un fondo") para
+ * que los cuatro botones no se anuncien igual. */
+function HelpBadge({ hint, label, open, onToggle }) {
+  // Nombre accesible corto y distinto por paso (los cuatro "?" no se
+  // anuncian igual); se evita repetir el texto del label para no generar
+  // nombres ambiguos con el campo asociado.
+  const step = /^\s*(\d+)/.exec(label)?.[1];
+  const name = step ? `Ayuda del paso ${step}` : `Ayuda: ${label}`;
+
   return (
     <button
       type="button"
       title={hint}
-      aria-label="Ayuda"
+      aria-label={name}
       aria-expanded={open}
       onClick={onToggle}
       className="shrink-0 w-7 h-7 md:w-6 md:h-6 rounded-pill bg-orange text-white shadow-soft flex items-center justify-center text-xs font-bold cursor-help transition-transform duration-150 ease-pop hover:scale-110"
@@ -32,7 +40,7 @@ function Step({ label, htmlFor, hint, children }) {
         <Label className="font-display text-lg tracking-wide" htmlFor={htmlFor}>
           {label}
         </Label>
-        <HelpBadge hint={hint} open={open} onToggle={() => setOpen((o) => !o)} />
+        <HelpBadge hint={hint} label={label} open={open} onToggle={() => setOpen((o) => !o)} />
       </div>
       {open && <p className="m-0 -mt-1 text-sm text-ink/75">{hint}</p>}
       {children}
