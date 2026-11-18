@@ -1,4 +1,16 @@
-import * as THREE from 'three';
+import {
+  CanvasTexture,
+  LinearFilter,
+  MathUtils,
+  Mesh,
+  PerspectiveCamera,
+  PlaneGeometry,
+  Scene,
+  ShaderMaterial,
+  TextureLoader,
+  Vector4,
+  WebGLRenderer,
+} from 'three';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { vertexShader, fragmentShader } from './shaders.js';
@@ -66,7 +78,7 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
   // =============================================================================
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({
+    renderer = new WebGLRenderer({
       canvas,
       antialias: true,
       powerPreference: 'high-performance',
@@ -81,15 +93,18 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+  const scene = new Scene();
+  const camera = new PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
   camera.position.set(0, 0, 4);
 
-  const geometry = new THREE.PlaneGeometry(1, 1, 48, 48);
-  const loader = new THREE.TextureLoader();
+  const geometry = new PlaneGeometry(1, 1, 48, 48);
+  const loader = new TextureLoader();
   loader.setCrossOrigin('anonymous');
   // Texturas de relleno creadas en memoria: también hay que liberarlas.
   const placeholderTextures = [];
+  // Marca de vida del engine: las texturas que terminan de cargar después de
+  // un cleanup se descartan en vez de quedar colgadas en la GPU.
+  let disposed = false;
 
   function placeholderTex(hex) {
     const c = document.createElement('canvas');
@@ -98,8 +113,8 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
     const ctx = c.getContext('2d');
     ctx.fillStyle = hex;
     ctx.fillRect(0, 0, 16, 16);
-    const t = new THREE.CanvasTexture(c);
-    t.minFilter = THREE.LinearFilter;
+    const t = new CanvasTexture(c);
+    t.minFilter = LinearFilter;
     placeholderTextures.push(t);
     return t;
   }
@@ -107,10 +122,10 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
   function coverFor(imgAspect, frameAspect) {
     if (imgAspect > frameAspect) {
       const w = frameAspect / imgAspect;
-      return new THREE.Vector4(w, 1.0, (1.0 - w) * 0.5, 0.0);
+      return new Vector4(w, 1.0, (1.0 - w) * 0.5, 0.0);
     }
     const h = imgAspect / frameAspect;
-    return new THREE.Vector4(1.0, h, 0.0, (1.0 - h) * 0.5);
+    return new Vector4(1.0, h, 0.0, (1.0 - h) * 0.5);
   }
 
   const coversSquare = new Array(ERAS.length);
@@ -125,25 +140,67 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
         coversSquare[i] = coverFor(imgAsp, 1.0);
         coversScreen[i] = coverFor(imgAsp, screenAsp);
       } else {
-        coversSquare[i] = new THREE.Vector4(1, 1, 0, 0);
-        coversScreen[i] = new THREE.Vector4(1, 1, 0, 0);
+        coversSquare[i] = new Vector4(1, 1, 0, 0);
+        coversScreen[i] = new Vector4(1, 1, 0, 0);
       }
     }
   }
 
+  // Texturas de era bajo demanda: cada era arranca con un color plano 1×1
+  // (casi gratis) y la foto real se pide cuando la era entra en juego o se
+  // convierte en la siguiente. Antes se descargaban las 11 imágenes (~5,4 MB)
+  // al montar el módulo, aunque el visitante no pasara del overview.
+  const pendingTextures = new Set();
+
   const textures = ERAS.map((era, i) => {
-    coversSquare[i] = new THREE.Vector4(1, 1, 0, 0);
-    coversScreen[i] = new THREE.Vector4(1, 1, 0, 0);
-    const tex = loader.load(era.full, () => {
-      refreshCovers();
-    });
-    tex.generateMipmaps = false;
-    tex.minFilter = THREE.LinearFilter;
-    tex.magFilter = THREE.LinearFilter;
+    coversSquare[i] = new Vector4(1, 1, 0, 0);
+    coversScreen[i] = new Vector4(1, 1, 0, 0);
+    const tex = placeholderTex(era.placeholder || '#121212');
+    tex.userData = { eraIndex: i, loaded: false };
     return tex;
   });
 
-  const material = new THREE.ShaderMaterial({
+  function loadEraTexture(i) {
+    const era = ERAS[i];
+    if (!era || !textures[i] || textures[i].userData?.loaded || pendingTextures.has(i)) return;
+    pendingTextures.add(i);
+    loader.load(
+      era.full,
+      (loaded) => {
+        pendingTextures.delete(i);
+        if (disposed) {
+          loaded.dispose();
+          return;
+        }
+        loaded.generateMipmaps = false;
+        loaded.minFilter = LinearFilter;
+        loaded.magFilter = LinearFilter;
+        loaded.userData = { eraIndex: i, loaded: true };
+
+        const previous = textures[i];
+        textures[i] = loaded;
+        refreshCovers();
+
+        // Si el túnel ya está mostrando el placeholder de esta era, cambia a
+        // la foto en el acto; si no, el próximo stage la tomará del array.
+        const uniforms = material.uniforms;
+        if (uniforms.uTex1.value === previous || uniforms.uTex2.value === previous) {
+          uniforms.uTex1.value = loaded;
+          uniforms.uTex2.value = loaded;
+          if (coversSquare[i]) uniforms.uCover1.value.copy(coversSquare[i]);
+          if (coversScreen[i]) uniforms.uCover2.value.copy(coversScreen[i]);
+        }
+      },
+      undefined,
+      () => {
+        // Error de red: se conserva el placeholder y se permite reintentar en
+        // la próxima visita a la era.
+        pendingTextures.delete(i);
+      }
+    );
+  }
+
+  const material = new ShaderMaterial({
     vertexShader,
     fragmentShader,
     uniforms: {
@@ -153,18 +210,22 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
       uSepia1: { value: 0.0 },
       uSepia2: { value: 0.0 },
       uCalm: { value: reduceMotion ? 1.0 : 0.0 },
-      uCover1: { value: new THREE.Vector4(1, 1, 0, 0) },
-      uCover2: { value: new THREE.Vector4(1, 1, 0, 0) },
+      uCover1: { value: new Vector4(1, 1, 0, 0) },
+      uCover2: { value: new Vector4(1, 1, 0, 0) },
     },
     transparent: true,
   });
 
-  const mesh = new THREE.Mesh(geometry, material);
+  const mesh = new Mesh(geometry, material);
   mesh.visible = false;
   scene.add(mesh);
 
+  // Primeras eras: overview y primer hito. El resto se pide al navegar.
+  loadEraTexture(0);
+  loadEraTexture(1);
+
   function getVisibleSize() {
-    const vFOV = THREE.MathUtils.degToRad(camera.fov);
+    const vFOV = MathUtils.degToRad(camera.fov);
     const visibleH = 2 * Math.tan(vFOV / 2) * camera.position.z;
     const visibleW = visibleH * camera.aspect;
     return { visibleW, visibleH };
@@ -218,7 +279,7 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
     // Card de fullview (overlay fijo al viewport): fade+rise scrubbeados con
     // t — visible durante el hold (t≈1), fuera el resto.
     if (fvCard) {
-      const k = THREE.MathUtils.clamp((t - 0.45) / 0.2, 0, 1);
+      const k = MathUtils.clamp((t - 0.45) / 0.2, 0, 1);
       fvCard.style.opacity = k.toFixed(3);
       fvCard.style.transform = `translateY(calc(-50% + ${((1 - k) * 24).toFixed(1)}px))`;
     }
@@ -236,7 +297,7 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
     }
 
     mesh.visible = true;
-    material.uniforms.uProgress.value = THREE.MathUtils.clamp(t, 0, 1);
+    material.uniforms.uProgress.value = MathUtils.clamp(t, 0, 1);
 
     if (textures[eraIndex]) {
       if (material.uniforms.uTex1.value !== textures[eraIndex]) {
@@ -266,11 +327,11 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
     const restWorld = screenToWorld(restCx, restCy, restW, restH);
     const { visibleW, visibleH } = getVisibleSize();
 
-    mesh.position.x = THREE.MathUtils.lerp(restWorld.x, 0, t);
-    mesh.position.y = THREE.MathUtils.lerp(restWorld.y, 0, t);
-    mesh.scale.x = THREE.MathUtils.lerp(restWorld.w, visibleW, t);
-    mesh.scale.y = THREE.MathUtils.lerp(restWorld.h, visibleH, t);
-    mesh.rotation.z = THREE.MathUtils.lerp(restRot, 0, t);
+    mesh.position.x = MathUtils.lerp(restWorld.x, 0, t);
+    mesh.position.y = MathUtils.lerp(restWorld.y, 0, t);
+    mesh.scale.x = MathUtils.lerp(restWorld.w, visibleW, t);
+    mesh.scale.y = MathUtils.lerp(restWorld.h, visibleH, t);
+    mesh.rotation.z = MathUtils.lerp(restRot, 0, t);
   }
 
   let animFrameId = null;
@@ -458,6 +519,12 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
     currentStageStep = boundedStep;
     const stage = STAGES[boundedStep];
     const fromStage = STAGES[fromStep];
+    // Precarga el destino y el siguiente para que el túnel no muestre el
+    // color plano al llegar (los saltos por dots/teclado son instantáneos).
+    if (stage.eraIdx >= 0) {
+      loadEraTexture(stage.eraIdx);
+      loadEraTexture(stage.eraIdx + 1);
+    }
     const st = scrollTween?.scrollTrigger;
     if (!st) return;
 
@@ -543,6 +610,13 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
   function setActive(i) {
     if (currentActiveEra === i) return;
     currentActiveEra = i;
+
+    // Al entrar en una era (polaroid o fullview) se piden su textura y la de
+    // la siguiente; así el túnel nunca espera al disco en plena transición.
+    if (i >= 0) {
+      loadEraTexture(i);
+      loadEraTexture(i + 1);
+    }
 
     if (i === -1) {
       // En el overview la esquina muestra el año inicial de la línea,
@@ -691,7 +765,7 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
               const dotRect = activeDot.getBoundingClientRect();
               const dotScreenX = dotRect.left + dotRect.width * 0.5;
               const dotTrackX = dotScreenX - trackRect.left;
-              const railFraction = THREE.MathUtils.clamp(dotTrackX / trackRect.width, 0, 1);
+              const railFraction = MathUtils.clamp(dotTrackX / trackRect.width, 0, 1);
               railProgress.style.transform = `scaleX(${railFraction})`;
             }
           }
@@ -1008,6 +1082,7 @@ export function initTimelineExperience(rootEl, ERAS, options = {}) {
   // Retorno de limpieza completa (con getST para restaurar progreso en re-init)
   const cleanup = () => {
     dead = true;
+    disposed = true;
     stageTween?.kill();
     stageTween = null;
     cancelAnimationFrame(animFrameId);

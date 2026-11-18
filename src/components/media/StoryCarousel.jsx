@@ -11,11 +11,11 @@ import { asset } from '../../lib/asset';
  * depende de hover) y se detiene por completo con prefers-reduced-motion.
  */
 const SLIDES = [
-  { src: asset('assets/carrusel/c1.png'), alt: 'C1 — ¿Alguna vez te has preguntado por el Barrio Abajo?' },
-  { src: asset('assets/carrusel/c2.png'), alt: 'C2 — Historia del barrio' },
-  { src: asset('assets/carrusel/c3.png'), alt: 'C3 — Tradición bajera' },
-  { src: asset('assets/carrusel/c4.png'), alt: 'C4 — La alegría es nuestra' },
-  { src: asset('assets/carrusel/c5.png'), alt: 'C5 — Expo BAQ 2050' },
+  { src: asset('assets/carrusel/c1.webp'), alt: 'C1 — ¿Alguna vez te has preguntado por el Barrio Abajo?' },
+  { src: asset('assets/carrusel/c2.webp'), alt: 'C2 — Historia del barrio' },
+  { src: asset('assets/carrusel/c3.webp'), alt: 'C3 — Tradición bajera' },
+  { src: asset('assets/carrusel/c4.webp'), alt: 'C4 — La alegría es nuestra' },
+  { src: asset('assets/carrusel/c5.webp'), alt: 'C5 — Expo BAQ 2050' },
 ];
 
 function usePrefersReducedMotion() {

@@ -5,11 +5,11 @@ import { asset } from '../../lib/asset';
  * contorno negro superior. v3: integra logos reales (public/assets/logos) en
  * banda de aliados, sin borde duro. */
 const LOGOS = [
-  { src: asset('assets/logos/logo-barrio-abajo.png'), alt: 'Barrio Abajo del Río' },
-  { src: asset('assets/logos/logo-festival.png'), alt: 'IV Festival Tradición Bajera' },
-  { src: asset('assets/logos/logo-alcaldia.png'), alt: 'Alcaldía de Barranquilla' },
-  { src: asset('assets/logos/logo-expo-baq-2050.png'), alt: 'Expo BAQ 2050' },
-  { src: asset('assets/logos/logo-riwi-grupo.png'), alt: 'Riwi Grupo' },
+  { src: asset('assets/logos/logo-barrio-abajo.webp'), alt: 'Barrio Abajo del Río' },
+  { src: asset('assets/logos/logo-festival.webp'), alt: 'IV Festival Tradición Bajera' },
+  { src: asset('assets/logos/logo-alcaldia.webp'), alt: 'Alcaldía de Barranquilla' },
+  { src: asset('assets/logos/logo-expo-baq-2050.webp'), alt: 'Expo BAQ 2050' },
+  { src: asset('assets/logos/logo-riwi-grupo.webp'), alt: 'Riwi Grupo' },
 ];
 
 export default function FooterBajero() {

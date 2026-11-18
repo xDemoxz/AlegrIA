@@ -1,5 +1,5 @@
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Module1Timeline from '../module1-timeline';
 import Module2FuturoTeaser from '../module2-future';
 import ModuleErrorBoundary from '../../components/feedback/ModuleErrorBoundary';
 
@@ -15,6 +15,66 @@ import ModuleErrorBoundary from '../../components/feedback/ModuleErrorBoundary';
  * cuenta para el alto de su caja de layout — sin este colchón, el borde
  * rotado queda visualmente superpuesto sobre el fondo oscuro del teaser.
  */
+
+// El timeline arrastra three + gsap (~700 kB). Se carga en su propio chunk
+// solo cuando el visitante se acerca a la sección, no al abrir el home.
+const Module1Timeline = lazy(() => import('../module1-timeline'));
+
+function TimelineSkeleton() {
+  return (
+    <section
+      className="flex min-h-[100svh] items-center justify-center bg-[#0d0d0d] px-6 text-center text-cream/50"
+      aria-busy="true"
+      aria-label="Cargando la línea de tiempo"
+    >
+      <p className="font-display text-xl tracking-[0.2em] uppercase">Cargando la línea del barrio…</p>
+    </section>
+  );
+}
+
+/**
+ * DeferredTimeline — monta el Módulo 1 justo antes de que su sección entre
+ * al viewport. Así el JS de WebGL no compite con la primera pintura y el pin
+ * ya existe cuando el usuario llega a la línea de tiempo.
+ */
+function DeferredTimeline() {
+  const anchorRef = useRef(null);
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    if (near) return;
+    const node = anchorRef.current;
+    if (!node) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setNear(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNear(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '10% 0px' }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [near]);
+
+  return (
+    <div ref={anchorRef}>
+      {near ? (
+        <Suspense fallback={<TimelineSkeleton />}>
+          <Module1Timeline />
+        </Suspense>
+      ) : (
+        <TimelineSkeleton />
+      )}
+    </div>
+  );
+}
+
 
 function TimelineFallback() {
   return (
@@ -43,7 +103,7 @@ export default function Home() {
     <>
       <div className="pb-8 md:pb-10 bg-[#0d0d0d]">
         <ModuleErrorBoundary fallback={<TimelineFallback />}>
-          <Module1Timeline />
+          <DeferredTimeline />
         </ModuleErrorBoundary>
       </div>
       <Module2FuturoTeaser />
