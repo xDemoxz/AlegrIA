@@ -7,6 +7,20 @@
 
 ---
 
+## 0. Estado de ejecución del plan (actualizado 2026-11-18)
+
+El diagnóstico de las secciones siguientes es el **original** sobre `d155759`. El plan P0–P2 ya se ejecutó en `develop`; este bloque resume el estado verificable al cierre:
+
+- **P0 — despliegue y AR:** `base` configurable (`VITE_BASE`), `404.html`, `vercel.json` y `_redirects`; `/ra` valida `VITE_AR_URL` (solo HTTPS; localhost en dev), usa `sandbox` acotado, timeout de 15 s y aviso de “no disponible” sin instrucciones técnicas.
+- **P1 — calidad:** ESLint + CI (`lint`, `test`, `build`); ciclo de vida completo de M1 (geometría, material y texturas liberados); póster operable con teclado y diálogo con foco atrapado; carrusel con pausa y `prefers-reduced-motion`; contraste del footer corregido; skip link, scroll restoration y semántica del timeline.
+- **P1.8 — rendimiento:** M1 con `React.lazy` + `IntersectionObserver`, chunks separados de three/gsap y texturas por era; carrusel, timeline, logos e iconos en WebP; fuentes (Bebas Neue, Work Sans y Caveat) auto-hospedadas. Chunk inicial ~227 kB; `dist` ~10 MB (5,7 MB del MP3).
+- **P1.10 — pruebas:** 61 tests de Vitest (rutas, header, scroll, export PNG/colores, URL AR) y 14 escenarios de Playwright en Pixel 7 e iPhone emulado.
+- **P2 — limpieza y documentación:** eliminados componentes/store/dependencias sin uso, originales movidos a `design/source`, README/CLAUDE/INFORME actualizados.
+
+Comandos de verificación al cierre: `npm run lint` (0 warnings), `npm test` (61/61), `npm run build` y `npm run test:e2e` (14/14).
+
+---
+
 ## 1. Resumen ejecutivo
 
 El proyecto está **funcionalmente mucho más avanzado que lo que describen sus documentos**: el scrollytelling de la línea de tiempo, el póster móvil con exportación PNG y el teaser/iframe de AR ya existen y compilan. La suite Vitest pasa completa (**35/35**) y `vite build` termina sin errores, aunque con advertencia de chunk >500 kB.

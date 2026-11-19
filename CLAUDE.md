@@ -36,7 +36,7 @@ npm run fonts
 
 - **Originales:** `design/source/{carrusel,timeline,logos,iconos}`. No están en `public`, así que no entran al build.
 - **Servidos:** `public/assets/...` en WebP, generados con `npm run optimize:images`. No editar los WebP a mano.
-- **Fuentes:** `src/assets/fonts/*.woff2` (subset latin, Bebas Neue y Work Sans). `npm run fonts` las regenera desde Google Fonts.
+- **Fuentes:** `src/assets/fonts/*.woff2` (subset latin, Bebas Neue, Work Sans y Caveat). `npm run fonts` las regenera desde Google Fonts.
 - **Audios:** `public/audios/` (MP3 del timeline, ~5,7 MB).
 - El helper `asset()` (`src/lib/asset.js`) resuelve rutas con la base de Vite; usarlo para todo asset de `public`.
 

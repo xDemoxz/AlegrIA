@@ -19,6 +19,7 @@
 - **Diseño:** sistema v2 consolidado (sin contornos negros duros, sombras difuminadas, verde teal).
 - **Módulos:** M1 con motor WebGL, M2 con teaser externo, M3 con fondos/estampitas y export, M4 con teaser + iframe AR.
 - **Calidad:** ESLint, Vitest, Playwright y CI; auditoría técnica ejecutada por fases (ver `AUDITORIA.md`).
+- **Fuentes:** Bebas Neue, Work Sans y Caveat se sirven desde `src/assets/fonts` (subset latin); no quedan peticiones a Google Fonts.
 - **Limpieza:** se eliminaron el store zustand, `ModuleNav`, `AudioToggle`, `SearchInput`, `MapPin`, `QuoteCard`, `StickerCard`, `TimelineRail`, `EmptyState`, `LoadingTejas`, `PopAlert`, `SectionRule`, `barrioAbajoData.json`, `tokens.json`, `tsconfig.json` y la dependencia `lenis`.
 
 ---

@@ -12,7 +12,7 @@ const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 const url =
-  'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500&display=swap';
+  'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@400..700&family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500&display=swap';
 
 const css = await (await fetch(url, { headers: { 'User-Agent': UA } })).text();
 const blocks = css.split('/* latin */').slice(1);

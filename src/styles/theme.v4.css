@@ -29,8 +29,14 @@
   font-display: swap;
   src: url('../assets/fonts/work-sans-latin-500-italic.woff2') format('woff2');
 }
-
-@import "tailwindcss";
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  /* Solo la usa el timeline (años escritos a mano); fuente variable 400–700. */
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../assets/fonts/caveat-latin-400.woff2') format('woff2');
+}
 
 @theme {
   /* ---- Color de marca ---- */

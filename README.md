@@ -55,7 +55,7 @@ src/
 ├── data/                 Hitos del timeline
 ├── lib/                  asset() · gestureBridge · sections
 ├── styles/               theme.v4.css (tokens y utilidades de marca)
-└── assets/fonts/         Bebas Neue y Work Sans en woff2 (subset latin)
+└── assets/fonts/         Bebas Neue, Work Sans y Caveat en woff2 (subset latin)
 design/source/            Originales de imagen (fuera del build)
 public/                   Solo lo que se sirve: WebP optimizados, audios y favicon
 ```
@@ -67,7 +67,7 @@ No hay store global: cada módulo vive en su ruta y recibe lo que necesita por p
 - El timeline (three + GSAP, ~578 kB) se carga con `React.lazy` cuando la sección se acerca al viewport; el chunk inicial queda en ~230 kB.
 - Las texturas del túnel se piden por era (no las 11 al montar).
 - Carrusel, timeline, logos e iconos del póster se sirven en WebP generado desde `design/source`; los originales no entran a `dist`.
-- Fuentes auto-hospedadas (sin peticiones a Google Fonts).
+- Fuentes auto-hospedadas (Bebas Neue, Work Sans y Caveat; sin peticiones a Google Fonts).
 - `dist` actual: ~10 MB, de los cuales ~5,7 MB son el MP3 del timeline.
 
 ### Imágenes

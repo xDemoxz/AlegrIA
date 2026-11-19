@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
+/* Caveat se declara en styles/theme.v4.css y se auto-hospeda en
+ * src/assets/fonts: este módulo no debe pedir fuentes a Google. */
 
 /* Vars acotadas al módulo: nunca en :root para no fugar al resto del App */
 .timeline-module-root {
